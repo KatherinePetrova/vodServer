@@ -19,8 +19,8 @@ async function convert(con){
 		await con.query('ALTER TABLE user CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci');
 		console.log('user table converted');
 
-		await con.query('ALTER TABLE driver_status CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci');
-		console.log('driver_status table converted');
+		await con.query('ALTER TABLE day_amount CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci');
+		console.log('day_amount driver converted');
 
 		await con.query('ALTER TABLE driver CONVERT TO CHARACTER SET utf8 COLLATE utf8_general_ci');
 		console.log('user driver converted');
@@ -50,10 +50,7 @@ async function firstConfiguration(con){
 		await con.query('CREATE TABLE user (id INT AUTO_INCREMENT PRIMARY KEY, login VARCHAR(255), password VARCHAR(255), email VARCHAR(255))');
 		console.log('user table created!');
 
-		await con.query('CREATE TABLE driver_status (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), free BOOLEAN DEFAULT TRUE)');
-		console.log('driver_status table created!');
-
-		await con.query('CREATE TABLE driver (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), phone VARCHAR(255), status INT REFERENCES driver_status(id))');
+		await con.query('CREATE TABLE driver (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), telegram_id VARCHAR(255), phone VARCHAR(255), status BOOLEAN DEFAULT TRUE)');
 		console.log('driver table created!');
 
 		await con.query('CREATE TABLE area (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), cost INT)');
@@ -64,6 +61,9 @@ async function firstConfiguration(con){
 
 		await con.query('CREATE TABLE app (id INT AUTO_INCREMENT PRIMARY KEY, adress VARCHAR(255), driver INT REFERENCES driver(id), area INT REFERENCES area(id), status INT REFERENCES app_status(id), app_cometime DATETIME DEFAULT CURRENT_TIMESTAMP, app_start DATETIME, app_finish DATETIME, app_time TIME, amount INT)');
 		console.log('app table created');
+
+		await con.query('CREATE TABLE day_amount (id INT AUTO_INCREMENT PRIMARY KEY, driver_id INT REFERENCES driver(id), amount INT DEFAULT 0)');
+		console.log('day_amount created');
 
 		convert(con);
 
