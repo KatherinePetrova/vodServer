@@ -7,6 +7,8 @@ var bodyparser = require('body-parser');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
+var webSocket = require('./ws/ws');
+
 var app = express();
 
 app.use(logger('dev'));

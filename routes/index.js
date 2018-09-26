@@ -7,7 +7,7 @@ var q = new query(con);
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+  res.render('index', { title: 'Server status: on' });
 });
 
 router.post('/add_driver', async function(req, res, next){
