@@ -18,6 +18,7 @@ router.post('/new_driver', async function(req, res, next){
 		status: req.body.status
 	};
 
+	res.send(JSON.stringify(driver));
 	console.log(driver);
 });
 
