@@ -6,7 +6,8 @@ var bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 
 var query = new Query(con);
-var secret = 'secret';
+var secret = "secret";
+
 /* GET users listing. */
 router.get('/', function(req, res, next) {
 	res.send('respond with a resource');
@@ -47,7 +48,7 @@ router.post('/login', async function(req, res, next){
 		user = user[0];
 		let bol = await bcrypt.compare(req.body.pass, user.password);
 		if(bol){
-			var token = jwt.sign({id: user.id, name: user.login}, secret);
+			var token = jwt.sign({id: user.id, name: user.login}, secret, {expiresIn: "12h"});
 			res.send(token);
 		} else {
 			res.status(403).send();

@@ -10,18 +10,15 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Server status: on' });
 });
 
-router.post('/add_driver', async function(req, res, next){
-	// try{
-	// 	var driver = await q.insert({table: 'driver', data: {
-	// 		name: req.a.id
-	// 		phone: 
+router.post('/new_driver', async function(req, res, next){
+	var driver = {
+		name: req.body.name,
+		telegram_id: req.body.userId,
+		phone: req.body.phonenumber,
+		status: req.body.status
+	};
 
-	// 	}});
-	// 	res.send({status: "200"});
-	// } catch(e){
-		
-	// }
-	
+	console.log(driver);
 });
 
 module.exports = router;
