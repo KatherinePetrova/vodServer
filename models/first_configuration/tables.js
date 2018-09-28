@@ -5,7 +5,7 @@ let util = require('util');
 var con = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "mansmans310796"
+  password: "Mandriva2012"
 });
 
 con.query = util.promisify(con.query);
