@@ -51,26 +51,31 @@ router.post('/new/driver', async function(req, res, next){
 	};
 
 	try{
-		//Отправка данных в базу
-		var insert = await q.insert({table: 'driver', data: driver});
+		var check = await q.select({table: 'driver', where: {telegram_id: driver.telegram_id}});
+		if(check.length==0){
+			res.status(409).send()
+		} else {
+			//Отправка данных в базу
+			var insert = await q.insert({table: 'driver', data: driver});
 
-		//Получение данных с базы
-		var select = await q.select({table: 'driver', where: {id: insert.insertId}});
-		select = select[0];
+			//Получение данных с базы
+			var select = await q.select({table: 'driver', where: {id: insert.insertId}});
+			select = select[0];
 
-		//Отправление сведений о новом водителе операторам (с помощью WebSocket)
-		for(var i; i<wsCons.length; i++){
-			//Проверка на существование соединения с клиентом
-			try{
-				wsCons[i].send(JSON.stringify({action: 'new_driver', data: select}));
-			} catch(e){
-				wsCons.splice(i, 1);
+			//Отправление сведений о новом водителе операторам (с помощью WebSocket)
+			for(var i; i<wsCons.length; i++){
+				//Проверка на существование соединения с клиентом
+				try{
+					wsCons[i].send(JSON.stringify({action: 'new_driver', data: select}));
+				} catch(e){
+					wsCons.splice(i, 1);
+				}
 			}
+
+			//Отправка успеха клиенту
+			res.send();
 		}
-
-		//Отправка успеха клиенту
-		res.send();
-
+	
 	} catch(e){
 		console.log(e);
 		//Отправка ошибки клиенту
