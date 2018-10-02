@@ -53,7 +53,7 @@ router.post('/new/driver', async function(req, res, next){
 	try{
 		var check = await q.select({table: 'driver', where: {telegram_id: driver.telegram_id}});
 		console.log(check);
-		if(check.length==0){
+		if(check.length!=0){
 			res.status(409).send()
 		} else {
 			//Отправка данных в базу
