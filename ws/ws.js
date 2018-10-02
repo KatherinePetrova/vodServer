@@ -4,9 +4,9 @@ var query = require('node-mysql-ejq');
 
 var q = new query(con);
 
-const wss = new WebSocket.Server({ port: 8080 });
+const wss = new WebSocket.Server({ port: 8387 });
 
-console.log('webSocket is listening on port 8080');
+console.log('webSocket is listening on port 8387');
 
 wss.on('connection', function connection(ws) {
 

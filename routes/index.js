@@ -14,7 +14,7 @@ var q = new query(con);
 
 //Создание WebSocket сервера
 const WebSocket = require('ws');
-const port = 8080;
+const port = 8001;
 const wss = new WebSocket.Server({ port: port });
 console.log('webSocket is listening on port ' + port);
 
