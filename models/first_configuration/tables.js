@@ -18,6 +18,7 @@ async function addFirstData(con){
 		await con.query('INSERT INTO app_status (name) VALUES ("Водитель выехал")');
 		await con.query('INSERT INTO app_status (name) VALUES ("Водитель на исполнении")');
 		await con.query('INSERT INTO app_status (name) VALUES ("Заявка выполнена")');
+		await con.query('INSERT INTO app_status (name) VALUES ("Заявка отменена")');
 
 		console.log('app_statuses added');
 	} catch(e){

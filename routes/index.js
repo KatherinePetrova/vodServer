@@ -27,6 +27,8 @@ wss.on('connection', function connection(ws) {
 	wsCons.push(ws);
 });
 
+var axios = require('axios');
+
 //Хэдеры для доступа с других портов
 router.use(function(req, res, next) {
  	res.header("Access-Control-Allow-Origin", "*");
@@ -51,6 +53,7 @@ router.post('/new/driver', async function(req, res, next){
 	};
 
 	try{
+		//Проверка на существование
 		var check = await q.select({table: 'driver', where: {telegram_id: driver.telegram_id}});
 		if(check.length!=0){
 			res.status(409).send()
@@ -179,7 +182,34 @@ router.post('/delete/driver', async function(req, res, next){
 	}
 });
 
-//Измнение статуса
+//Отправка заявки водителю
+router.post('/update/app/sent', async function(req, res){
+	var date = new Date();
+	var id = req.body.id;
+	var driver = req.body.driver_id;
+	var app = {
+		driver: driver,
+		status: 2,
+		app_start: date
+	};
+	try{
+		var update_app = await q.update({table: 'app', data: app, where: {id: id}});
+		var select_app = await q.select({table: 'app', keys: ['id', 'adress', 'area'], where: {id: id}, join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}]});
+		select_app = select_app[0];
+		console.log(select_app);
+		axios
+	    	.post('https://asterisk.svo.kz/app', select_app)
+	     	.then(response => {
+	     		console.log('post resp')
+	      		var update_driver = q.update({table: 'driver', data: {status: false}, where: {id: driver}});
+	      		res.send(select_app);
+	     	})
+	     	.catch(error => {
+	     		console.log('post net');
+	      		res.status(400).send();
+	     	});
+	}
+});
 
 router.post('/get/new_app', async function(req, res, next){
 	try{
