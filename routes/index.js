@@ -208,6 +208,9 @@ router.post('/update/app/sent', async function(req, res){
 	     		console.log('post net');
 	      		res.status(400).send();
 	     	});
+	} catch(e){
+		console.log(e);
+		res.status(500).send();
 	}
 });
 
