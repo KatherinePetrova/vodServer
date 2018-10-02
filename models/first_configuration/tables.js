@@ -80,8 +80,8 @@ async function firstConfiguration(con){
 		await con.query('CREATE TABLE day_amount (id INT AUTO_INCREMENT PRIMARY KEY, driver_id INT REFERENCES driver(id), amount INT DEFAULT 0)');
 		console.log('day_amount created');
 
-		convert(con);
-		addFirstData(con);
+		await convert(con);
+		await addFirstData(con);
 
 	} catch(e){
 		throw new Error(e)
