@@ -10,6 +10,21 @@ var con = mysql.createConnection({
 
 con.query = util.promisify(con.query);
 
+async function addFirstData(con){
+	try{
+		con.changeUser({database: "vod"});
+		await con.query('INSERT INTO app_status (name) VALUES ("Новая")');
+		await con.query('INSERT INTO app_status (name) VALUES ("Ожидает водителя")');
+		await con.query('INSERT INTO app_status (name) VALUES ("Водитель выехал")');
+		await con.query('INSERT INTO app_status (name) VALUES ("Водитель на исполнении")');
+		await con.query('INSERT INTO app_status (name) VALUES ("Заявка выполнена")');
+
+		console.log('app_statuses added');
+	} catch(e){
+		console.log(e)
+	}
+}
+
 //converting tables into utf8
 async function convert(con){
 	try{
@@ -66,6 +81,7 @@ async function firstConfiguration(con){
 		console.log('day_amount created');
 
 		convert(con);
+		addFirstData(con);
 
 	} catch(e){
 		throw new Error(e)
