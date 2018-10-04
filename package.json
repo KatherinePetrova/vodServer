@@ -15,7 +15,7 @@
     "jsonwebtoken": "^8.3.0",
     "morgan": "~1.9.0",
     "mysql": "^2.16.0",
-    "node-mysql-ejq": "^1.0.20",
+    "node-mysql-ejq": "^1.0.21",
     "passport": "^0.4.0",
     "ws": "^6.0.0"
   }

@@ -182,7 +182,7 @@ router.post('/delete/driver', async function(req, res, next){
 	}
 });
 
-//Отправка заявки водителю
+//Отправка заявки водителю (статус: ожидает водителя (2))
 router.post('/update/app/sent', async function(req, res){
 	var date = new Date();
 	var id = req.body.id;
@@ -198,7 +198,7 @@ router.post('/update/app/sent', async function(req, res){
 		select_app = select_app[0];
 		console.log(select_app);
 		axios
-	    	.post('https://asterisk.svo.kz/app', select_app)
+	    	.post('https://asterisk.svo.kz/admin/app', select_app)
 	     	.then(response => {
 	     		console.log('post resp')
 	      		var update_driver = q.update({table: 'driver', data: {status: false}, where: {id: driver}});
@@ -210,6 +210,63 @@ router.post('/update/app/sent', async function(req, res){
 	     	});
 	} catch(e){
 		console.log(e);
+		res.status(500).send();
+	}
+});
+
+//Статус: (3, 4) Водитель выехал, водитель на исполнении
+router.post('/update/status/on', async function(req, res){
+	console.log(req.body);
+	var date = new Date();
+	var id = req.body.id;
+	var status = req.body.status;
+	var app = {
+		app_start: date,
+		status: req.body
+	};
+	try{
+		var update_app = await q.update({table: 'app', data: app, where: {id: id}});
+		console.log(update_app);
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				await wsCons[i].send(JSON.stringify({action: 'update_app_status', data: {id: id, status: status}}));
+			} catch(e){
+				await wsCons.splice(i, 1);
+			}
+		}
+		res.send();
+	} catch(e){
+		res.status(500).send();
+	}
+});
+
+//Статус: (5) завершение заявки
+router.post('/update/status/finish', async function(req, res){
+	console.log(req.body);
+	var date = new Date();
+	var id = req.body.id;
+	var app = {
+		app_finish: date,
+		status: 5
+	};
+	try{
+		var update_app = await q.update({table: 'app', data: app, where: {id: id}});
+		var select_app = await q.select({table: 'app', keys: ['app_start', 'app_finish'], where: {id: id}});
+		select_app = select_app[0];
+		var time = select_app.app_finish - select_app.app_start;
+		time = ((time/1000)/60)/60;
+		var cost = time*100 + 700;
+		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost}});
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				await wsCons[i].send(JSON.stringify({action: 'update_app_status_finish', data: {id: id, status: 5, amount: cost, app_time: time}}));
+			} catch(e){
+				await wsCons.splice(i, 1);
+			}
+		}
+		res.send({time: time, cost: cost});
+	} catch(e){
+		consoe.log(e);
 		res.status(500).send();
 	}
 });
