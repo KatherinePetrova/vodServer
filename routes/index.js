@@ -206,7 +206,7 @@ router.post('/update/app/sent', async function(req, res){
 });
 
 //Принятие подтверждения
-router.post('update/app/sent_acc', async function(req, res){
+router.post('/update/app/sent_acc', async function(req, res){
 	var id = req.body.id;
 	var telegram_id = req.body.telegram_id;
 	var driver = 0;
