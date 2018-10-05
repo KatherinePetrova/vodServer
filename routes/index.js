@@ -241,6 +241,32 @@ router.post('/update/app/sent_acc', async function(req, res){
 	}
 });
 
+//Отмена заявки
+router.post('/update/app/sent_dec', async function(req, res){
+	var id = req.body.id;
+	var driver = 0;
+	try{
+		var select = q.select({table: 'driver', where: {telegram_id: req.body.telegram_id}, keys: ['id']});
+		driver = select[0].id;
+		if(typeof driver == 'undefined'){
+			res.status(401).sent();
+		} else {
+			var update = q.update({table: 'driver', where: {id: driver}, data: {status: true}});
+			for(var i=0; i<wsCons.length; i++){
+				try{
+					await wsCons[i].send(JSON.stringify({action: 'update_app_dec', data: {id: id, driver: driver}}));
+				} catch(e){
+					await wsCons.splice(i, 1);
+				}
+			}
+		}
+		
+	} catch(e){
+		res.status(500).send();
+	}
+	
+});
+
 //Статус: (3, 4) Водитель выехал, водитель на исполнении
 router.post('/update/status/on', async function(req, res){
 	console.log(req.body);
