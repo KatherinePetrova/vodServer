@@ -190,6 +190,7 @@ router.post('/update/app/sent', async function(req, res){
 	try{
 		var select_app = await q.select({table: 'app', keys: ['id', 'adress', 'area'], where: {id: id}, join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}]});
 		select_app = select_app[0];
+		console.log(select_app);
 		axios
 	    	.post('https://asterisk.svo.kz/admin/app', select_app)
 	     	.then(response => {
