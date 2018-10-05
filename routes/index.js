@@ -188,7 +188,7 @@ router.post('/update/app/sent', async function(req, res){
 	var id = req.body.id;
 	var driver = req.body.driver_id;
 	try{
-		var update_app = await q.update({table: 'app', where: {id: id}, data: {driver_id: driver}});
+		var update_app = await q.update({table: 'app', where: {id: id}, data: {driver: driver}});
 		var select_app = await q.select({table: 'app', keys: ['id', 'adress', 'area'], where: {id: id}, join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}]});
 		select_app = select_app[0];
 		console.log(select_app);
