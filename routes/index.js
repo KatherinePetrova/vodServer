@@ -247,11 +247,13 @@ router.post('/update/app/sent_dec', async function(req, res){
 	var driver = 0;
 	try{
 		var select = q.select({table: 'driver', where: {telegram_id: req.body.telegram_id}, keys: ['id']});
+		console.log('pop');
 		driver = select[0].id;
 		if(typeof driver == 'undefined'){
 			res.status(401).sent();
 		} else {
 			var update = q.update({table: 'driver', where: {id: driver}, data: {status: true}});
+			console.log('pop2');
 			for(var i=0; i<wsCons.length; i++){
 				try{
 					await wsCons[i].send(JSON.stringify({action: 'update_app_dec', data: {id: id, driver: driver}}));
