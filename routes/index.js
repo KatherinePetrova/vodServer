@@ -360,7 +360,7 @@ async function checkTime(){
 		try{
 			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id']}]});
 			axios
-				.post('djfdkf', select)
+				.post('https://asterisk.svo.kz/admin/send_drivers', select)
 				.then(response => {
 					for(var i=0; i<select.length; i++){
 						var update = q.update({table: 'day_amount', where: {active: true}, data: {active: false}});
