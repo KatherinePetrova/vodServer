@@ -193,7 +193,6 @@ router.post('/update/app/sent', async function(req, res){
 	    	.post('https://asterisk.svo.kz/admin/app', select_app)
 	     	.then(response => {
 	     		console.log('post resp')
-	      		var update_driver = q.update({table: 'driver', data: {status: false}, where: {id: driver}});
 	      		res.send(select_app);
 	     	})
 	     	.catch(error => {
@@ -217,6 +216,7 @@ router.post('update/app/sent_acc', async function(req, res){
 		if(typeof driver == 'undefined'){
 			res.status(401).send();
 		}
+		var update_driver = q.update({table: 'driver', data: {status: false}, where: {id: driver}});
 	} catch(e){
 		console.log(e);
 		res.status(500).send();
