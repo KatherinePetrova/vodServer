@@ -246,13 +246,13 @@ router.post('/update/app/sent_dec', async function(req, res){
 	var id = req.body.id;
 	var driver = 0;
 	try{
-		var select = q.select({table: 'driver', where: {telegram_id: req.body.telegram_id}, keys: ['id']});
+		var select = await q.select({table: 'driver', where: {telegram_id: req.body.telegram_id}, keys: ['id']});
 		console.log(select);
 		driver = select[0].id;
 		if(typeof driver == 'undefined'){
 			res.status(401).sent();
 		} else {
-			var update = q.update({table: 'driver', where: {id: driver}, data: {status: true}});
+			var update = await q.update({table: 'driver', where: {id: driver}, data: {status: true}});
 			console.log('pop2');
 			for(var i=0; i<wsCons.length; i++){
 				try{
