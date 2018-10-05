@@ -338,7 +338,7 @@ router.post('/update/status/finish', async function(req, res){
 		var update_da = await q.update({table: 'day_amount', where: {id: select_da.id}, data: {amount: select_da.amount + cost, driver_amount: driver_amount}});		
 		res.send({time: time, driver_amount: driver_amount});
 	} catch(e){
-		consoe.log(e);
+		console.log(e);
 		res.status(500).send();
 	}
 });
