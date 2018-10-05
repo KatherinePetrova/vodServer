@@ -259,6 +259,7 @@ router.post('/update/app/sent_dec', async function(req, res){
 					await wsCons.splice(i, 1);
 				}
 			}
+			res.send();
 		}
 		
 	} catch(e){
