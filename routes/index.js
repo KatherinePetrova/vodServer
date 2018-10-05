@@ -60,6 +60,7 @@ router.post('/new/driver', async function(req, res, next){
 		} else {
 			//Отправка данных в базу
 			var insert = await q.insert({table: 'driver', data: driver});
+			var insert_da = await q.insert({table: 'day_amount', data: {driver_id: insert.insertId}});
 
 			//Получение данных с базы
 			var select = await q.select({table: 'driver', where: {id: insert.insertId}});
@@ -307,14 +308,21 @@ router.post('/update/status/finish', async function(req, res){
 	};
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: id}});
-		var select_app = await q.select({table: 'app', keys: ['app_start', 'app_finish'], where: {id: id}});
+		var select_app = await q.select({table: 'app', keys: ['app_start', 'app_finish', 'area', 'driver'], where: {id: id}});
 		select_app = select_app[0];
 		var time = select_app.app_finish - select_app.app_start;
-		time = ((time/1000)/60)/60;
+		time = Math.round(((time/1000)/60)/60);
 		console.log(time);
-		var cost = time*100 + 700;
+		var val = 0;
+		if(select_app.area==1){
+			val = 500;
+		} else {
+			val = 1000;
+		}
+		var cost = time*700 + val;
+		var driver_cost = 400 + ((cost/100)*5);
 		console.log(cost);
-		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost}});
+		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost, driver_amount: driver_amount}});
 		for(var i=0; i<wsCons.length; i++){
 			try{
 				await wsCons[i].send(JSON.stringify({action: 'update_app_status_finish', data: {id: id, status: 5, amount: cost, app_time: time}}));
@@ -322,7 +330,10 @@ router.post('/update/status/finish', async function(req, res){
 				await wsCons.splice(i, 1);
 			}
 		}
-		res.send({time: time, cost: cost});
+		var select_da = await q.select({table: 'day_amount', where: {active: true, driver_id: select_app.driver}});
+		select_da = select_da[0];
+		var update_da = await q.update({table: 'day_amount', where: {id: select_da.id}, data: {amount: select_da.amount + cost, driver_amount: driver_amount}});		
+		res.send({time: time, driver_amount: driver_amount});
 	} catch(e){
 		consoe.log(e);
 		res.status(500).send();
@@ -339,5 +350,36 @@ router.post('/get/new_app', async function(req, res, next){
 	}
 	
 });
+
+
+async function checkTime(){
+	var time = new Date();
+	//var hours = time.getHours(), minutes = time.getMinutes();
+	var hours = 9, minutes = 0;
+	if(hours==9 && minutes==0){
+		try{
+			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id']}]});
+			axios
+				.post('djfdkf', select)
+				.then(response => {
+					for(var i=0; i<select.length; i++){
+						var update = q.update({table: 'day_amount', where: {active: true}, data: {active: false}});
+					}
+					var drivers = q.select({table: 'driver', keys: ['id']});
+					for(var i=0; i<drivers.length; i++){
+						var insert = q.insert({table: 'day_amount', data: {driver_id: drivers[i].id}});
+					}
+				})
+				.catch(error => {
+					console.log('huerror: ' + error);
+				});
+		} catch(e){
+			console.log(e);
+		}
+	}
+}
+
+//var x = setInterval(checkTime, 20*1000);
+checkTime();
 
 module.exports = router;
