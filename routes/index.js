@@ -323,7 +323,7 @@ router.post('/update/status/finish', async function(req, res){
 			val = 1000;
 		}
 		var cost = time*700 + val;
-		var driver_cost = 400 + ((cost/100)*5);
+		var driver_amount = 400 + ((cost/100)*5);
 		console.log(cost);
 		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost, driver_amount: driver_amount}});
 		for(var i=0; i<wsCons.length; i++){
