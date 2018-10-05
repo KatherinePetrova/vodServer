@@ -184,19 +184,11 @@ router.post('/delete/driver', async function(req, res, next){
 
 //Отправка заявки водителю (статус: ожидает водителя (2))
 router.post('/update/app/sent', async function(req, res){
-	var date = new Date();
 	var id = req.body.id;
 	var driver = req.body.driver_id;
-	var app = {
-		driver: driver,
-		status: 2,
-		app_start: date
-	};
 	try{
-		var update_app = await q.update({table: 'app', data: app, where: {id: id}});
 		var select_app = await q.select({table: 'app', keys: ['id', 'adress', 'area'], where: {id: id}, join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}]});
 		select_app = select_app[0];
-		console.log(select_app);
 		axios
 	    	.post('https://asterisk.svo.kz/admin/app', select_app)
 	     	.then(response => {
@@ -210,6 +202,41 @@ router.post('/update/app/sent', async function(req, res){
 	     	});
 	} catch(e){
 		console.log(e);
+		res.status(500).send();
+	}
+});
+
+//Принятие подтверждения
+router.post('update/app/sent_acc', async function(req, res){
+	var id = req.body.id;
+	var telegram_id = req.body.telegram_id;
+	var driver = 0;
+	try{
+		var select = await q.select({table: 'driver', where: {telegram_id: telegram_id}, keys: ['id']});
+		driver = select[0].id;
+		if(typeof driver == 'undefined'){
+			res.status(401).send();
+		}
+	} catch(e){
+		console.log(e);
+		res.status(500).send();
+	}
+	var app = {
+		status: 2,
+		app_start: new Date(),
+		driver: driver
+	};
+	try{
+		var update = q.update({table: 'app', data: app, where: {id: id}});
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				await wsCons[i].send(JSON.stringify({action: 'update_app_acc', data: {id: id, app: app}}));
+			} catch(e){
+				await wsCons.splice(i, 1);
+			}
+		}
+		res.send();
+	} catch(e){
 		res.status(500).send();
 	}
 });
@@ -255,7 +282,9 @@ router.post('/update/status/finish', async function(req, res){
 		select_app = select_app[0];
 		var time = select_app.app_finish - select_app.app_start;
 		time = ((time/1000)/60)/60;
+		console.log(time);
 		var cost = time*100 + 700;
+		console.log(cost);
 		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost}});
 		for(var i=0; i<wsCons.length; i++){
 			try{
