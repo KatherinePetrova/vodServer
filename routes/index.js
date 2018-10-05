@@ -256,6 +256,7 @@ router.post('/update/app/sent_dec', async function(req, res){
 			res.status(401).sent();
 		} else {
 			var update = await q.update({table: 'driver', where: {id: driver}, data: {status: true}});
+			var update_app = await q.update({table: 'app', where: {id: id}, data: {driver: null}});
 			console.log('pop2');
 			for(var i=0; i<wsCons.length; i++){
 				try{
