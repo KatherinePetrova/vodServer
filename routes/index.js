@@ -346,6 +346,7 @@ router.post('/update/status/finish', async function(req, res){
 //Отмена заявки от клиента
 router.post('/update/status/cancel', async function(req, res){
 	var id = req.body.id;
+	console.log(id);
 	if(typeof id == 'undefined'){
 		res.status(400).send();
 	}
