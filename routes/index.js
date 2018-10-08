@@ -351,7 +351,7 @@ router.post('/update/status/cancel', async function(req, res){
 		res.status(400).send();
 	}
 	try{
-		var select_app = q.select({table: 'app', where: {id: id}, keys: ['status', 'driver'], join: [{on: {driver: 'id'}, keys: ['telegram_id'], table: 'driver'}]});
+		var select_app = await q.select({table: 'app', where: {id: id}, keys: ['status', 'driver'], join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}]});
 		select_app = select_app[0];
 		console.log(select_app);
 		if(select_app.status == 1){
@@ -362,7 +362,7 @@ router.post('/update/status/cancel', async function(req, res){
 					await wsCons.splice(i, 1);
 				}
 			}
-			var update_app = q.update({table: 'app', data: {status: 6}, where: {id: id}});
+			var update_app = await q.update({table: 'app', data: {status: 6}, where: {id: id}});
 			res.send();
 		} else {
 			for(var i=0; i<wsCons.length; i++){
@@ -376,8 +376,8 @@ router.post('/update/status/cancel', async function(req, res){
 		    	.post('https://asterisk.svo.kz/admin/client_dec', {id: id, telegram_id: select_app.telegram_id})
 		     	.then(response => {
 		     		console.log('post dec');
-		     		var update_app = q.update({table: 'app', data: {status: 6}});
-		     		var update_driver = q.update({table: 'driver', data: {status: true}});
+		     		var update_app = await q.update({table: 'app', data: {status: 6}});
+		     		var update_driver = await q.update({table: 'driver', data: {status: true}});
 		      		res.send();
 		     	})
 		     	.catch(error => {
