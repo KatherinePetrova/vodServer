@@ -409,6 +409,8 @@ router.post('/get/drivers', async function(req, res){
 		var select = await q.select({table: 'driver'});
 		console.log(select);
 		res.send(select);
+	} catch(e){
+		res.status(500).send();
 	}
 });
 
