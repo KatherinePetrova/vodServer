@@ -244,7 +244,7 @@ router.post('/update/app/sent_acc', async function(req, res){
 	}
 });
 
-//Отмена заявки
+//Отмена заявки от водителя
 router.post('/update/app/sent_dec', async function(req, res){
 	var id = req.body.id;
 	var driver = 0;
@@ -256,7 +256,7 @@ router.post('/update/app/sent_dec', async function(req, res){
 			res.status(401).sent();
 		} else {
 			var update = await q.update({table: 'driver', where: {id: driver}, data: {status: true}});
-			var update_app = await q.update({table: 'app', where: {id: id}, data: {driver: null}});
+			var update_app = await q.update({table: 'app', where: {id: id}, data: {driver: null, status: 1}});
 			console.log('pop2');
 			for(var i=0; i<wsCons.length; i++){
 				try{
@@ -341,6 +341,54 @@ router.post('/update/status/finish', async function(req, res){
 		console.log(e);
 		res.status(500).send();
 	}
+});
+
+//Отмена заявки от клиента
+router.post('/update/status/cancel', async function(req, res){
+	var id = req.body.id;
+	if(typeof id == 'undefined'){
+		res.status(400).send();
+		break
+	}
+	try{
+		var select_app = q.select({table: 'app', where: {id: id}, keys: ['status'],join: [{on: {driver: 'id'}, keys: ['telegram_id', 'id']}]});
+		select_app = select_app[0];
+		if(select_app.status == 1){
+			for(var i=0; i<wsCons.length; i++){
+				try{
+					await wsCons[i].send(JSON.stringify({action: 'update_app_status_dec', data: {id: id}}));
+				} catch(e){
+					await wsCons.splice(i, 1);
+				}
+			}
+			var update_app = q.update({table: 'app', data: {status: 6}, where: {id: id}});
+			res.send();
+		} else {
+			for(var i=0; i<wsCons.length; i++){
+				try{
+					await wsCons[i].send(JSON.stringify({action: 'update_app_status_dec', data: {id: id}}));
+				} catch(e){
+					await wsCons.splice(i, 1);
+				}
+			}
+			axios
+		    	.post('https://asterisk.svo.kz/admin/client_dec', {id: id, telegram_id: select_app.telegram_id})
+		     	.then(response => {
+		     		console.log('post dec');
+		     		var update_app = q.update({table: 'app', data: {status: 6}});
+		     		var update_driver = q.update({table: 'driver', data: {status: true}});
+		      		res.send();
+		     	})
+		     	.catch(error => {
+		     		console.log('post r');
+		      		res.status(400).send();
+		     	});
+		}
+	} catch(e){
+		console.log(e);
+		res.status(500).send();
+	}
+
 });
 
 router.post('/get/new_app', async function(req, res, next){
