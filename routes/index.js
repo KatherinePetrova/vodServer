@@ -351,7 +351,7 @@ router.post('/update/status/cancel', async function(req, res){
 		res.status(400).send();
 	}
 	try{
-		var select_app = q.select({table: 'app', where: {id: id}, keys: ['status'],join: [{on: {driver: 'id'}, keys: ['telegram_id', 'id']}]});
+		var select_app = q.select({table: 'app', where: {id: id}, keys: ['status'], join: [{on: {driver: 'id'}, keys: ['telegram_id', 'id'], table: 'driver'}]});
 		select_app = select_app[0];
 		console.log(select_app);
 		if(select_app.status == 1){
