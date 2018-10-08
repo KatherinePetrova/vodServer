@@ -348,7 +348,6 @@ router.post('/update/status/cancel', async function(req, res){
 	var id = req.body.id;
 	if(typeof id == 'undefined'){
 		res.status(400).send();
-		break
 	}
 	try{
 		var select_app = q.select({table: 'app', where: {id: id}, keys: ['status'],join: [{on: {driver: 'id'}, keys: ['telegram_id', 'id']}]});
