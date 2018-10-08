@@ -376,8 +376,8 @@ router.post('/update/status/cancel', async function(req, res){
 		    	.post('https://asterisk.svo.kz/admin/client_dec', {id: id, telegram_id: select_app.telegram_id})
 		     	.then(response => {
 		     		console.log('post dec');
-		     		var update_app = await q.update({table: 'app', data: {status: 6}});
-		     		var update_driver = await q.update({table: 'driver', data: {status: true}});
+		     		var update_app = q.update({table: 'app', data: {status: 6}});
+		     		var update_driver = q.update({table: 'driver', data: {status: true}});
 		      		res.send();
 		     	})
 		     	.catch(error => {
