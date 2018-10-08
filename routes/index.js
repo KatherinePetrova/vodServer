@@ -403,6 +403,15 @@ router.post('/get/new_app', async function(req, res, next){
 	
 });
 
+router.post('/get/drivers', async function(req, res){
+	try{
+		var token = await jwt.verify(req.body.token, secret);
+		var select = await q.select({table: 'driver'});
+		console.log(select);
+		res.send(select);
+	}
+});
+
 
 async function checkTime(){
 	var time = new Date();
