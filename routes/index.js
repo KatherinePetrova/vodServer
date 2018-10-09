@@ -188,18 +188,16 @@ router.post('/update/app/sent', async function(req, res){
 	var id = req.body.id;
 	var driver = req.body.driver_id;
 	try{
-		var update_app = await q.update({table: 'app', where: {id: id}, data: {driver: driver}});
+		var update_app = await q.update({table: 'app', where: {id: id}, data: {driver: driver, status: 2}});
 		var select_app = await q.select({table: 'app', keys: ['id', 'adress', 'area'], where: {id: id}, join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}]});
 		select_app = select_app[0];
 		console.log(select_app);
 		axios
 	    	.post('https://asterisk.svo.kz/admin/app', select_app)
 	     	.then(response => {
-	     		console.log('post resp')
 	      		res.send(select_app);
 	     	})
 	     	.catch(error => {
-	     		console.log('post net');
 	      		res.status(400).send();
 	     	});
 	} catch(e){
@@ -392,10 +390,19 @@ router.post('/update/status/cancel', async function(req, res){
 
 });
 
+//Получение новых заявок
 router.post('/get/new_app', async function(req, res, next){
 	try{
 		var token = await jwt.verify(req.body.token, secret);
-		var select = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime'], where: {status: 1}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
+		var select_new = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status'], where: {status: 1}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
+		var select_wait = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status'], where: {status: 2}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
+		var select = [];
+		for(var i=0, i<select_new.length; i++){
+			select.push(select_new[i]);
+		}
+		for(var i=0, i<select_wait.length; i++){
+			select.push(select_wait[i]);
+		}
 		res.send(select);
 	} catch(e){
 		res.status(500).send();
@@ -403,6 +410,13 @@ router.post('/get/new_app', async function(req, res, next){
 	
 });
 
+//Получение оформленных заявок
+router.post('/get/app', async function(req, res){
+	var token = await jwt.verify(req.body.token, secret);
+	var select = await q.select({table: 'app', keys: ['']})
+});
+
+//Получение водителей
 router.post('/get/drivers', async function(req, res){
 	try{
 		var token = await jwt.verify(req.body.token, secret);
@@ -413,7 +427,6 @@ router.post('/get/drivers', async function(req, res){
 		res.status(500).send();
 	}
 });
-
 
 async function checkTime(){
 	var time = new Date();
