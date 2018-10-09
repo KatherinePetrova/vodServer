@@ -397,10 +397,10 @@ router.post('/get/new_app', async function(req, res, next){
 		var select_new = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status'], where: {status: 1}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
 		var select_wait = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status'], where: {status: 2}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
 		var select = [];
-		for(var i=0, i<select_new.length; i++){
+		for(var i=0; i<select_new.length; i++){
 			select.push(select_new[i]);
 		}
-		for(var i=0, i<select_wait.length; i++){
+		for(var i=0; i<select_wait.length; i++){
 			select.push(select_wait[i]);
 		}
 		res.send(select);
