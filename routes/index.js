@@ -161,26 +161,23 @@ router.post('/delete/driver', async function(req, res, next){
 });
 
 //Отправка заявки водителю (статус: ожидает водителя (2))
-router.post('/update/app/sent', function(req, res){
+router.post('/update/app/sent', async function(req, res){
 	var app = req.body.app;
 	var telegram_id = req.body.telegram_id;
-	axios
-	    .post('https://asterisk.svo.kz/admin/app', {telegram_id: telegram_id, adress: app.adress, area: app.area, id: app.id})
-	    .then(response => {
-	    	try {
-	    		var driver = q.select({table: 'driver', where: {telegram_id: telegram_id}, keys: ['id']});
-		    	driver = driver[0].id;
-		    	var update_app = q.update({table: 'app', where: {id: app.id}, data: {driver: driver, status: 2}});
-		    	var update_driver = q.update({table: 'driver', where: {id: driver}, data: {status: false}});
-		    	var select_app = q.select({table: 'app', where: {id: app.id}, keys: ['id', 'adress', 'app_cometime', 'status'], join: [{table: 'app_status', on: {status: 'id'}, keys: ['name']}]});
-		    	res.send(select_app);
-	    	} catch(e){
-	    		res.status(500).send();
-	    	}   	
-	    })
-	    .catch(error => {
-	    	res.status(400).send();
-	    });
+	var query = await axios.post('https://asterisk.svo.kz/admin/app', {telegram_id: telegram_id, adress: app.adress, area: app.area, id: app.id});
+	console.log(query);
+	res.send();    
+	    	// try {
+	    	// 	var driver = q.select({table: 'driver', where: {telegram_id: telegram_id}, keys: ['id']});
+		    // 	driver = driver[0].id;
+		    // 	var update_app = q.update({table: 'app', where: {id: app.id}, data: {driver: driver, status: 2}});
+		    // 	var update_driver = q.update({table: 'driver', where: {id: driver}, data: {status: false}});
+		    // 	var select_app = q.select({table: 'app', where: {id: app.id}, keys: ['id', 'adress', 'app_cometime', 'status'], join: [{table: 'app_status', on: {status: 'id'}, keys: ['name']}]});
+		    // 	res.send(select_app);
+	    	// } catch(e){
+	    	// 	res.status(500).send();
+	    	// }   	
+	    
 });
 
 //Принятие подтверждения
