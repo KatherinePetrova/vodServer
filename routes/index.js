@@ -99,7 +99,7 @@ router.post('/new/app', async function(req, res, next){
 
 	try {
 		var insert = await q.insert({table: 'app', data: app});
-		var select = await q.select({table: 'app', where: {id: 1}});
+		var select = await q.select({table: 'app', where: {id: insert.insertId}});
 		select = select[0];
 		console.log(select);
 		for(var i=0; i<wsCons.length; i++){
