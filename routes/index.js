@@ -161,27 +161,26 @@ router.post('/delete/driver', async function(req, res, next){
 });
 
 //Отправка заявки водителю (статус: ожидает водителя (2))
-router.post('/update/app/sent', async function(req, res){
-	var id = req.body.id;
-	var driver = req.body.driver_id;
-	try{
-		var update_app = await q.update({table: 'app', where: {id: id}, data: {driver: driver, status: 2}});
-		var select_app = await q.select({table: 'app', keys: ['id', 'adress', 'area', 'app_cometime'], where: {id: id}, join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}, {table: 'app_status', on: {status: 'id'}, keys: [
-			name]}]});
-		select_app = select_app[0];
-		console.log(select_app);
-		axios
-	    	.post('https://asterisk.svo.kz/admin/app', select_app)
-	     	.then(response => {
-	      		res.send(select_app);
-	     	})
-	     	.catch(error => {
-	      		res.status(400).send();
-	     	});
-	} catch(e){
-		console.log(e);
-		res.status(500).send();
-	}
+router.post('/update/app/sent', function(req, res){
+	var app = req.body.app;
+	var telegram_id = req.body.telegram_id;
+	axios
+	    .post('https://asterisk.svo.kz/admin/app', {telegram_id: telegram_id, adress: app.adress, area: app.area, id: app.id})
+	    .then(response => {
+	    	try {
+	    		var driver = q.select({table: 'driver', where: {telegram_id: telegram_id}, keys: ['id']});
+		    	driver = driver[0].id;
+		    	var update_app = q.update({table: 'app', where: {id: app.id}, data: {driver: driver, status: 2}});
+		    	var update_driver = q.update({table: 'driver', where: {id: driver}, data: {status: false}});
+		    	var select_app = q.select({table: 'app', where: {id: app.id}, keys: ['id', 'adress', 'app_cometime', 'status'], join: [{table: 'app_status', on: {status: 'id'}, keys: ['name']}]});
+		    	res.send(select_app);
+	    	} catch(e){
+	    		res.status(500).send();
+	    	}   	
+	    })
+	    .catch(error => {
+	    	res.status(400).send();
+	    });
 });
 
 //Принятие подтверждения
