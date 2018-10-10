@@ -127,11 +127,12 @@ router.post('/update/driver/data', async function(req, res, next){
 
 	try{
 		var update = await q.update({table: 'driver', data: driver, where: {id: id}});
+		var select = await q.select({table: 'driver'})
 		for(var i=0; i<wsCons.length; i++){
 			try{
-				wsCons[i].send(JSON.stringify({action: 'update_driver_data', data: {id: id, name: driver.name, phone: driver.phone}}));
+				wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
 			} catch(e){
-				wsCons.splice(i, 1);
+				console.log('catch')
 			}
 		}
 		res.send();
@@ -146,11 +147,12 @@ router.post('/delete/driver', async function(req, res, next){
 	var id = req.body.id;
 	try{
 		var del = await q.delete({table: 'driver', where: {telegram_id: id}});
+		var select = await q.select({table: 'driver'});
 		for(var i=0; i<wsCons.length; i++){
 			try{
-				wsCons[i].send(JSON.stringify({action: 'delete_driver', data: {telegram_id: id}}));
+				wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
 			} catch(e){
-				wsCons.splice(i, 1);
+				console.log('catch');
 			}
 		}
 		res.send();
@@ -171,8 +173,23 @@ router.post('/update/app/sent', async function(req, res){
 		    driver = driver[0].id;
 		    var update_app = await q.update({table: 'app', where: {id: app.id}, data: {driver: driver, status: 2}});
 		    var update_driver = await q.update({table: 'driver', where: {id: driver}, data: {status: false}});
-		    var select_app = await q.select({table: 'app', where: {id: app.id}, keys: ['id', 'adress', 'app_cometime', 'status'], join: [{table: 'app_status', on: {status: 'id'}, keys: ['name']}]});
-		    res.send(select_app);
+		    var select_app = await q.select({table: 'app'});
+		    var select_driver = await q.select({table: 'app'});
+		    for(var i=0; i<wsCons.length; i++){
+				try{
+					wsCons[i].send(JSON.stringify({action: 'app', data: select_app}));
+				} catch(e){
+					console.log('catch');
+				}
+			}
+			for(var i=0; i<wsCons.length; i++){
+				try{
+					wsCons[i].send(JSON.stringify({action: 'driver', data: select_driver}));
+				} catch(e){
+					console.log('catch');
+				}
+			}
+		    res.send();
 	    } catch(e){
 	    	res.status(500).send();
 	    }
@@ -193,12 +210,12 @@ router.post('/update/status/on', async function(req, res){
 	};
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: id}});
-		console.log(update_app);
+		var select = await q.select({table: 'app'});
 		for(var i=0; i<wsCons.length; i++){
 			try{
-				await wsCons[i].send(JSON.stringify({action: 'update_app_status', data: {id: id, status: status}}));
+				wsCons[i].send(JSON.stringify({action: 'app', data: select}));
 			} catch(e){
-				await wsCons.splice(i, 1);
+				console.log('catch');
 			}
 		}
 		res.send();
@@ -233,11 +250,20 @@ router.post('/update/status/finish', async function(req, res){
 		var driver_amount = 400 + ((cost/100)*5);
 		console.log(cost);
 		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost, driver_amount: driver_amount}});
+		var select_app_ws = q.select({table: 'app'});
+		var select_driver_ws = q.select({table: 'driver'});
 		for(var i=0; i<wsCons.length; i++){
 			try{
-				await wsCons[i].send(JSON.stringify({action: 'update_app_status_finish', data: {id: id, status: 5, amount: cost, app_time: time}}));
+				wsCons[i].send(JSON.stringify({action: 'driver', data: select_driver_ws}));
 			} catch(e){
-				await wsCons.splice(i, 1);
+				console.log('catch');
+			}
+		}
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				wsCons[i].send(JSON.stringify({action: 'app', data: select_app_ws}));
+			} catch(e){
+				console.log('catch');
 			}
 		}
 		var select_da = await q.select({table: 'day_amount', where: {active: true, driver_id: select_app.driver}});
