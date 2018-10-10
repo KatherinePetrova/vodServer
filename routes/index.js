@@ -116,29 +116,6 @@ router.post('/new/app', async function(req, res, next){
 
 });
 
-//Изменение статуса водителя
-router.post('/update/driver/status', async function(req, res, next){
-	var id = req.body.id;
-	var driver = {
-		status: req.body.status
-	};
-
-	try{
-		var update = await q.update({table: 'driver', data: driver, where: {id: id}});
-		for(var i=0; i<wsCons.length; i++){
-			try{
-				wsCons[i].send(JSON.stringify({action: 'update_driver_status', data: {id: id, status: driver.status}}));
-			} catch(e){
-				wsCons.splice(i, 1);
-			}
-		}
-		res.send();
-	} catch(e){
-		throw new Error(e);
-		res.status(500).send();
-	}
-});
-
 //Изменение данных водителя
 router.post('/update/driver/data', async function(req, res, next){
 	var id = req.body.id;
@@ -189,7 +166,8 @@ router.post('/update/app/sent', async function(req, res){
 	var driver = req.body.driver_id;
 	try{
 		var update_app = await q.update({table: 'app', where: {id: id}, data: {driver: driver, status: 2}});
-		var select_app = await q.select({table: 'app', keys: ['id', 'adress', 'area'], where: {id: id}, join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}]});
+		var select_app = await q.select({table: 'app', keys: ['id', 'adress', 'area', 'app_cometime'], where: {id: id}, join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}, {table: 'app_status', on: {status: 'id'}, keys: [
+			name]}]});
 		select_app = select_app[0];
 		console.log(select_app);
 		axios
