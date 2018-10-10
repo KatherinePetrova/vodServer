@@ -371,8 +371,8 @@ router.post('/update/status/cancel', async function(req, res){
 router.post('/get/new_app', async function(req, res, next){
 	try{
 		var token = await jwt.verify(req.body.token, secret);
-		var select_new = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status'], where: {status: 1}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
-		var select_wait = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status'], where: {status: 2}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
+		var select_new = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status', 'area'], where: {status: 1}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
+		var select_wait = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status', 'area'], where: {status: 2}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
 		var select = [];
 		for(var i=0; i<select_new.length; i++){
 			select.push(select_new[i]);
