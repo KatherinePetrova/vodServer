@@ -23,7 +23,7 @@ var wsCons = [];
 
 //Функция для добавления соединения в массив
 wss.on('connection', function connection(ws) {
-	console.log("Operator connected");
+	console.log("\nOperator connected\n");
 	wsCons.push(ws);
 });
 
@@ -306,7 +306,8 @@ router.post('/get/inf', async function(req, res, next){
 		var token = await jwt.verify(req.body.token, secret);
 		var app = await q.select({table: 'app'});
 		var driver = await q.select({table: 'driver'});
-		res.send({app: app, driver: driver});
+		var app_status = await q.select({table: 'app_status'});
+		res.send({app: app, driver: driver, app_status: app_status});
 	} catch(e){
 		res.status(500).send();
 	}
