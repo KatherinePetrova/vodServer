@@ -99,7 +99,7 @@ router.post('/new/app', async function(req, res, next){
 
 	try {
 		var insert = await q.insert({table: 'app', data: app});
-		var select = await q.select({table: 'app', keys: ['id', 'adress', 'app_cometime'], where: {id: 1}, join: [{table: 'app_status', on: {status: "id"}, keys: ['name']}]});
+		var select = await q.select({table: 'app', where: {id: 1}});
 		select = select[0];
 		for(var i=0; i<wsCons.length; i++){
 			try{
@@ -299,39 +299,13 @@ router.post('/update/status/cancel', async function(req, res){
 
 });
 
-//Получение новых заявок
-router.post('/get/new_app', async function(req, res, next){
+//Получение информации для оператора
+router.post('/get/inf', async function(req, res, next){
 	try{
 		var token = await jwt.verify(req.body.token, secret);
-		var select_new = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status', 'area'], where: {status: 1}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
-		var select_wait = await q.select({table: 'app', keys:['adress', 'id', 'app_cometime', 'status', 'area'], where: {status: 2}, join: [{table: 'app_status', keys: ['name'], on: {status: 'id'}}]});
-		var select = [];
-		for(var i=0; i<select_new.length; i++){
-			select.push(select_new[i]);
-		}
-		for(var i=0; i<select_wait.length; i++){
-			select.push(select_wait[i]);
-		}
-		res.send(select);
-	} catch(e){
-		res.status(500).send();
-	}
-	
-});
-
-//Получение оформленных заявок
-router.post('/get/app', async function(req, res){
-	var token = await jwt.verify(req.body.token, secret);
-	var select = await q.select({table: 'app', keys: ['']})
-});
-
-//Получение водителей
-router.post('/get/drivers', async function(req, res){
-	try{
-		var token = await jwt.verify(req.body.token, secret);
-		var select = await q.select({table: 'driver'});
-		console.log(select);
-		res.send(select);
+		var app = await q.select({table: 'app'});
+		var driver = await q.select({table: 'driver'});
+		res.send({app: app, driver: driver});
 	} catch(e){
 		res.status(500).send();
 	}
