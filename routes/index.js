@@ -105,7 +105,6 @@ router.post('/new/app', async function(req, res, next){
 			try{
 				wsCons[i].send(JSON.stringify({action: 'app', data: select}));
 			} catch(e){
-				wsCons.splice(i, 1);
 				console.log('catch')
 			}
 		}
