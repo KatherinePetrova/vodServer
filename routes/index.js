@@ -235,7 +235,6 @@ router.post('/update/status/on', async function(req, res){
 
 //Статус: (5) завершение заявки
 router.post('/update/status/finish', async function(req, res){
-	console.log(req.body);
 	var date = new Date();
 	var id = req.body.id;
 	var app = {
@@ -244,7 +243,8 @@ router.post('/update/status/finish', async function(req, res){
 	};
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: id}});
-		var select_app = await q.select({table: 'app', keys: ['app_start', 'app_finish', 'area', 'driver'], where: {id: id}});
+		var select_app = await q.select({table: 'app', where: {id: id}});
+		var select_driver = await q.select({table: 'driver', where: {id: select_app.driver}});
 		select_app = select_app[0];
 		var time = select_app.app_finish - select_app.app_start;
 		time = Math.round(((time/1000)/60)/60);
@@ -257,7 +257,7 @@ router.post('/update/status/finish', async function(req, res){
 		var cost = time*700 + val;
 		var driver_amount = 400 + ((cost/100)*5);
 		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost, driver_amount: driver_amount}, where: {id: id}});
-		var update_driver = await q.update({table: 'driver', data: {status: true}, where: {id: select_app.driver}});
+		var update_driver = await q.update({table: 'driver', data: {status: true, balance: select_driver.balance - (cost-driver_amount)}, where: {id: select_app.driver}});
 		var select_app_ws = await q.select({table: 'app'});
 		var select_driver_ws = await q.select({table: 'driver'});
 		for(var i=0; i<wsCons.length; i++){
