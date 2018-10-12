@@ -235,6 +235,7 @@ router.post('/update/status/on', async function(req, res){
 router.post('/update/status/finish', async function(req, res){
 	var date = new Date();
 	var id = req.body.id;
+	console.log(id)
 	var app = {
 		app_finish: date,
 		status: 5
@@ -242,6 +243,7 @@ router.post('/update/status/finish', async function(req, res){
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: id}});
 		var select_app = await q.select({table: 'app', where: {id: id}});
+		console.log(select_app);
 		var select_driver = await q.select({table: 'driver', where: {id: select_app.driver}});
 		select_app = select_app[0];
 		var time = select_app.app_finish - select_app.app_start;
