@@ -244,7 +244,6 @@ router.post('/update/status/finish', async function(req, res){
 		var select_app = await q.select({table: 'app', where: {id: id}});
 		select_app = select_app[0];
 		var select_driver = await q.select({table: 'driver', where: {id: select_app.driver}});
-		select_app = select_app[0];
 		var time = select_app.app_finish - select_app.app_start;
 		time = Math.round(((time/1000)/60)/60);
 		var val = 0;
