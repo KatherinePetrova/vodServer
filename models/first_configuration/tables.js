@@ -66,7 +66,7 @@ async function firstConfiguration(con){
 		await con.query('CREATE TABLE user (id INT AUTO_INCREMENT PRIMARY KEY, login VARCHAR(255), password VARCHAR(255), email VARCHAR(255))');
 		console.log('user table created!');
 
-		await con.query('CREATE TABLE driver (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), telegram_id VARCHAR(255), phone VARCHAR(255), car VARCHAR(255), car_number VARCHAR(255), status BOOLEAN DEFAULT TRUE, qiwi VARCHAR(255), balance INT DEFAULT 0)');
+		await con.query('CREATE TABLE driver (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), telegram_id VARCHAR(255), phone VARCHAR(255), status BOOLEAN DEFAULT TRUE, qiwi VARCHAR(255), balance INT DEFAULT 0)');
 		console.log('driver table created!');
 
 		await con.query('CREATE TABLE area (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), cost INT)');
