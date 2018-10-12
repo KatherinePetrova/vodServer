@@ -249,6 +249,7 @@ router.post('/update/status/finish', async function(req, res){
 		var driver_amount = 400 + ((cost/100)*5);
 		console.log(cost);
 		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost, driver_amount: driver_amount}, where: {id: id}});
+		var update_driver = await q.update({table: 'driver', data: {status: true}, where: {id: select_app.driver}});
 		var select_app_ws = await q.select({table: 'app'});
 		var select_driver_ws = await q.select({table: 'driver'});
 		for(var i=0; i<wsCons.length; i++){
