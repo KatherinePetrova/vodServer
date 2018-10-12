@@ -249,8 +249,8 @@ router.post('/update/status/finish', async function(req, res){
 		var driver_amount = 400 + ((cost/100)*5);
 		console.log(cost);
 		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost, driver_amount: driver_amount}});
-		var select_app_ws = q.select({table: 'app'});
-		var select_driver_ws = q.select({table: 'driver'});
+		var select_app_ws = await q.select({table: 'app'});
+		var select_driver_ws = await q.select({table: 'driver'});
 		for(var i=0; i<wsCons.length; i++){
 			try{
 				wsCons[i].send(JSON.stringify({action: 'driver', data: select_driver_ws}));
@@ -267,6 +267,7 @@ router.post('/update/status/finish', async function(req, res){
 		}
 		var select_da = await q.select({table: 'day_amount', where: {active: true, driver_id: select_app.driver}});
 		select_da = select_da[0];
+		console.log(select_da)
 		var update_da = await q.update({table: 'day_amount', where: {id: select_da.id}, data: {amount: select_da.amount + cost, driver_amount: driver_amount}});		
 		res.send({time: time, driver_amount: driver_amount});
 	} catch(e){
