@@ -107,12 +107,57 @@ router.post('/new/app', async function(req, res, next){
 				console.log('catch')
 			}
 		}
-		res.send();
+		var select_app = await q.select({table: 'app', where: {id: insert.insertId}});
+		select_app = select_app[0];
+		var select_driver = await q.select({table: 'driver', where: {status: true}});
+		var query = await axios.post('https://asterisk.svo.kz/admin/sent', {app: select_app, drivers: select_driver});
+		if(query.status==200){
+			res.send();			
+		} else {
+			console.log(e);
+			res.status(query.status).send();
+		}
 	} catch(e) {
-		throw new Error(e)
+		console.log(e);
 		res.status(500).send();
 	}
 
+});
+
+//Подтверждение заявки
+router.post('/accept', async function(req, res){
+	var telegram_id = req.body.telegram_id;
+	var app_id = req.body.app_id;
+	try{
+		var select_app = await q.select({table: 'app', where: {id: app_id}});
+		select_app = select_app[0];
+		if(select_app.driver == ''){
+			var select_driver = await q.select({table: 'driver', where: {telegram_id: telegram_id}});
+			select_driver = select_driver[0];
+			var app = {
+				driver: select_driver.id,
+				app_start: new Date(),
+				status: 2
+			}
+			var update_driver = await q.update({table: 'driver', where: {id: select_driver.id}, data: {status: false}});
+			var update_app = await q.update({table: 'app', where: {id: app_id}, data: app});
+			var select_app_ws = await q.select({table: 'app'});
+			var select_driver_ws = await q.select({table: 'driver'});
+			for(var i=0; i<wsCons.length; i++){
+				try{
+					wsCons[i].send(JSON.stringify({action: 'app', data: select_app_ws}));
+					wsCons[i].send(JSON.stringify({action: 'driver', data: select_driver_ws}));
+				} catch(e){
+					console.log('catch')
+				}
+			}
+			res.send();
+		} else {
+			res.status(409).send();
+		}
+	} catch(e){
+		res.status(500).send();
+	}
 });
 
 //Изменение данных водителя
@@ -161,42 +206,6 @@ router.post('/delete/driver', async function(req, res, next){
 	}
 });
 
-//Отправка заявки водителю (статус: ожидает водителя (2))
-router.post('/update/app/sent', async function(req, res){
-	var app = req.body.app;
-	var telegram_id = req.body.telegram_id;
-	var query = await axios.post('https://asterisk.svo.kz/admin/app', {telegram_id: telegram_id, adress: app.adress, area: app.area, id: app.id});
-	if(query.status==200){
-		try {
-	    	var driver = await q.select({table: 'driver', where: {telegram_id: telegram_id}, keys: ['id']});
-		    driver = driver[0].id;
-		    var update_app = await q.update({table: 'app', where: {id: app.id}, data: {driver: driver, status: 2}});
-		    var update_driver = await q.update({table: 'driver', where: {id: driver}, data: {status: false}});
-		    var select_app = await q.select({table: 'app'});
-		    var select_driver = await q.select({table: 'app'});
-		    for(var i=0; i<wsCons.length; i++){
-				try{
-					wsCons[i].send(JSON.stringify({action: 'app', data: select_app}));
-				} catch(e){
-					console.log('catch');
-				}
-			}
-			for(var i=0; i<wsCons.length; i++){
-				try{
-					wsCons[i].send(JSON.stringify({action: 'driver', data: select_driver}));
-				} catch(e){
-					console.log('catch');
-				}
-			}
-		    res.send();
-	    } catch(e){
-	    	res.status(500).send();
-	    }
-	} else {
-		res.status(406).send()
-	}
-});
-
 //Статус: (3, 4) Водитель выехал, водитель на исполнении
 router.post('/update/status/on', async function(req, res){
 	console.log(req.body);
@@ -238,7 +247,6 @@ router.post('/update/status/finish', async function(req, res){
 		select_app = select_app[0];
 		var time = select_app.app_finish - select_app.app_start;
 		time = Math.round(((time/1000)/60)/60);
-		console.log(time);
 		var val = 0;
 		if(select_app.area==1){
 			val = 500;
@@ -247,7 +255,6 @@ router.post('/update/status/finish', async function(req, res){
 		}
 		var cost = time*700 + val;
 		var driver_amount = 400 + ((cost/100)*5);
-		console.log(cost);
 		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost, driver_amount: driver_amount}, where: {id: id}});
 		var update_driver = await q.update({table: 'driver', data: {status: true}, where: {id: select_app.driver}});
 		var select_app_ws = await q.select({table: 'app'});
@@ -277,55 +284,6 @@ router.post('/update/status/finish', async function(req, res){
 	}
 });
 
-//Отмена заявки от клиента
-router.post('/update/status/cancel', async function(req, res){
-	var id = req.body.id;
-	console.log(id);
-	if(typeof id == 'undefined'){
-		res.status(400).send();
-	}
-	try{
-		var select_app = await q.select({table: 'app', where: {id: id}, keys: ['status', 'driver'], join: [{table: 'driver', on: {driver: 'id'}, keys: ['telegram_id']}]});
-		select_app = select_app[0];
-		console.log(select_app);
-		if(select_app.status == 1){
-			for(var i=0; i<wsCons.length; i++){
-				try{
-					await wsCons[i].send(JSON.stringify({action: 'update_app_status_dec', data: {id: id}}));
-				} catch(e){
-					await wsCons.splice(i, 1);
-				}
-			}
-			var update_app = await q.update({table: 'app', data: {status: 6}, where: {id: id}});
-			res.send();
-		} else {
-			for(var i=0; i<wsCons.length; i++){
-				try{
-					await wsCons[i].send(JSON.stringify({action: 'update_app_status_dec', data: {id: id}}));
-				} catch(e){
-					await wsCons.splice(i, 1);
-				}
-			}
-			axios
-		    	.post('https://asterisk.svo.kz/admin/client_dec', {id: id, telegram_id: select_app.telegram_id})
-		     	.then(response => {
-		     		console.log('post dec');
-		     		var update_app = q.update({table: 'app', data: {status: 6}});
-		     		var update_driver = q.update({table: 'driver', data: {status: true}});
-		      		res.send();
-		     	})
-		     	.catch(error => {
-		     		console.log('post r');
-		      		res.status(400).send();
-		     	});
-		}
-	} catch(e){
-		console.log(e);
-		res.status(500).send();
-	}
-
-});
-
 //Получение информации для оператора
 router.post('/get/inf', async function(req, res, next){
 	try{
@@ -341,11 +299,10 @@ router.post('/get/inf', async function(req, res, next){
 
 async function checkTime(){
 	var time = new Date();
-	//var hours = time.getHours(), minutes = time.getMinutes();
-	var hours = 9, minutes = 0;
+	var hours = time.getHours(), minutes = time.getMinutes();
 	if(hours==9 && minutes==0){
 		try{
-			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id']}]});
+			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'driver_amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id']}]});
 			console.log(select);
 			var query = await axios.post('https://asterisk.svo.kz/admin/send_drivers', select);
 			if(query.status==200){
@@ -366,7 +323,7 @@ async function checkTime(){
 	}
 }
 
-//var x = setInterval(checkTime, 20*1000);
+var x = setInterval(checkTime, 20*1000);
 checkTime();
 
 module.exports = router;
