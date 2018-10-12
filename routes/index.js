@@ -47,9 +47,7 @@ router.post('/new/driver', async function(req, res, next){
 	var driver = {
 		name: req.body.name,
 		telegram_id: req.body.id,
-		phone: req.body.phone,
-		car: req.body.car,
-		car_number: req.body.car_number
+		phone: req.body.phone
 	};
 
 	try{
