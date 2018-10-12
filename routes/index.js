@@ -131,7 +131,7 @@ router.post('/accept', async function(req, res){
 	try{
 		var select_app = await q.select({table: 'app', where: {id: app_id}});
 		select_app = select_app[0];
-		if(select_app.driver == ''){
+		if(select_app.driver == null){
 			var select_driver = await q.select({table: 'driver', where: {telegram_id: telegram_id}});
 			select_driver = select_driver[0];
 			var app = {
