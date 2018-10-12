@@ -346,22 +346,21 @@ async function checkTime(){
 		try{
 			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id']}]});
 			console.log(select);
-			axios
-				.post('https://asterisk.svo.kz/admin/send_drivers', select)
-				.then(response => {
-					for(var i=0; i<select.length; i++){
-						var update = q.update({table: 'day_amount', where: {active: true}, data: {active: false}});
-					}
-					var drivers = q.select({table: 'driver', keys: ['id']});
-					for(var i=0; i<drivers.length; i++){
-						var insert = q.insert({table: 'day_amount', data: {driver_id: drivers[i].id}});
-					}
-				})
-				.catch(error => {
-					console.log('huerror: ' + error);
-				});
+			var query = await axios.post('https://asterisk.svo.kz/admin/send_drivers', select);
+			if(query.status==200){
+				for(var i=0; i<select.length; i++){
+					var update = await q.update({table: 'day_amount', where: {active: true}, data: {active: false}});
+				}
+				var drivers = await q.select({table: 'driver', keys: ['id']});
+				for(var i=0; i<drivers.length; i++){
+					var insert = q.insert({table: 'day_amount', data: {driver_id: drivers[i].id}});
+				}
+			} else {
+				res.status(query.status).send();
+			}
 		} catch(e){
 			console.log(e);
+			res.status(500).send();
 		}
 	}
 }
