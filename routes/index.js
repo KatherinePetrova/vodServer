@@ -110,7 +110,7 @@ router.post('/new/app', async function(req, res, next){
 		var select_app = await q.select({table: 'app', where: {id: insert.insertId}});
 		select_app = select_app[0];
 		var select_driver = await q.select({table: 'driver', where: {status: true}});
-		var query = await axios.post('https://asterisk.svo.kz/admin/sent', {app: select_app, drivers: select_driver});
+		var query = await axios.post('https://asterisk.svo.kz/admin/app', {app: select_app, drivers: select_driver});
 		if(query.status==200){
 			res.send();			
 		} else {
