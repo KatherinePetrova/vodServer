@@ -127,7 +127,7 @@ router.post('/new/app', async function(req, res, next){
 //Подтверждение заявки
 router.post('/accept', async function(req, res){
 	var telegram_id = req.body.telegram_id;
-	var app_id = req.body.app_id;
+	var app_id = req.body.id;
 	try{
 		var select_app = await q.select({table: 'app', where: {id: app_id}});
 		select_app = select_app[0];
