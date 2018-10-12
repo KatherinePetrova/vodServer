@@ -345,6 +345,7 @@ async function checkTime(){
 	if(hours==9 && minutes==0){
 		try{
 			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id']}]});
+			console.log(select);
 			axios
 				.post('https://asterisk.svo.kz/admin/send_drivers', select)
 				.then(response => {
