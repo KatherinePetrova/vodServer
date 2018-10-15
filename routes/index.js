@@ -99,7 +99,7 @@ router.post('/driver/accept', async function(req, res){
 	} else if(driver.acceptance==0){
 		var query = await axios.post('https://asterisk.svo.kz/admin/driver/acceptance', driver);
 		if(query.status==200){
-			var delete = await q.delete({table: 'driver', where: {id: driver.id}});
+			var del = await q.delete({table: 'driver', where: {id: driver.id}});
 			res.status(409).send();
 		} else {
 			res.status(500).send();
