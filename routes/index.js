@@ -296,13 +296,14 @@ router.post('/get/inf', async function(req, res, next){
 	}
 });
 
+var check = true;
+
 async function checkTime(){
 	var time = new Date();
 	var hours = time.getHours(), minutes = time.getMinutes();
-	if(hours==9 && minutes==0){
+	if(hours==11 && minutes==0 && check){
 		try{
 			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'driver_amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id']}]});
-			console.log(select);
 			var query = await axios.post('https://asterisk.svo.kz/admin/send_drivers', select);
 			if(query.status==200){
 				for(var i=0; i<select.length; i++){
@@ -315,14 +316,15 @@ async function checkTime(){
 			} else {
 				res.status(query.status).send();
 			}
+			check = false
 		} catch(e){
 			console.log(e);
 			res.status(500).send();
 		}
+	} else if(hours==11 && minutes==1){
+		check = true;
 	}
 }
-
 var x = setInterval(checkTime, 20*1000);
-checkTime();
 
 module.exports = router;
