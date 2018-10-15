@@ -47,7 +47,8 @@ router.post('/new/driver', async function(req, res, next){
 	var driver = {
 		name: req.body.name,
 		telegram_id: req.body.id,
-		phone: req.body.phone
+		phone: req.body.phone,
+		document: req.body.document
 	};
 
 	try{
@@ -58,17 +59,15 @@ router.post('/new/driver', async function(req, res, next){
 		} else {
 			//Отправка данных в базу
 			var insert = await q.insert({table: 'driver', data: driver});
-			var insert_da = await q.insert({table: 'day_amount', data: {driver_id: insert.insertId}});
 
 			//Получение данных с базы
-			var select = await q.select({table: 'driver', where: {id: insert.insertId}});
-			select = select[0];
+			var select = await q.select({table: 'driver'});
 
 			//Отправление сведений о новом водителе операторам (с помощью WebSocket)
 			for(var i; i<wsCons.length; i++){
 				//Проверка на существование соединения с клиентом
 				try{
-					wsCons[i].send(JSON.stringify({action: 'new_driver', data: select}));
+					wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
 				} catch(e){
 					wsCons.splice(i, 1);
 				}
@@ -82,6 +81,29 @@ router.post('/new/driver', async function(req, res, next){
 		console.log(e);
 		//Отправка ошибки клиенту
 		res.send(500).send();
+	}
+});
+
+//Подтверждение регистрации водителя
+router.post('/driver/accept', async function(req, res){
+	var driver = req.body.driver;
+	if(driver.acceptance==1){
+		var query = await axios.post('https://asterisk.svo.kz/admin/driver/acceptance', driver);
+		if(query.status==200){
+			var update = await q.update({table: 'driver', data: driver, where: {id: driver.id}});
+			var insert_da = await q.insert({table: 'day_amount', data: {driver_id: driver.id}});
+			res.send()
+		} else {
+			res.status(500).send();
+		}
+	} else if(driver.acceptance==0){
+		var query = await axios.post('https://asterisk.svo.kz/admin/driver/acceptance', driver);
+		if(query.status==200){
+			var delete = await.delete({table: 'driver', where: {id: driver.id}});
+			res.status(409).send();
+		} else {
+			res.status(500).send();
+		}
 	}
 });
 
@@ -108,6 +130,11 @@ router.post('/new/app', async function(req, res, next){
 		var select_app = await q.select({table: 'app', where: {id: insert.insertId}});
 		select_app = select_app[0];
 		var select_driver = await q.select({table: 'driver', where: {status: true}});
+		for(var i=0; i<select_driver.length; i++){
+			if(select_driver[i].acceptance==0){
+				select_driver.splice(i, 1);
+			}
+		}
 		var query = await axios.post('https://asterisk.svo.kz/admin/app', {app: select_app, drivers: select_driver});
 		if(query.status==200){
 			res.send();			
@@ -255,7 +282,7 @@ router.post('/update/status/finish', async function(req, res){
 		}
 		var cost = time*700 + val;
 		var driver_amount = 400 + ((cost/100)*5);
-		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost, driver_amount: driver_amount}, where: {id: id}});
+		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost-driver_amount, driver_amount: driver_amount}, where: {id: id}});
 		var update_driver = await q.update({table: 'driver', data: {status: true, balance: select_driver.balance- (cost-driver_amount)}, where: {id: select_app.driver}});
 		var select_app_ws = await q.select({table: 'app'});
 		var select_driver_ws = await q.select({table: 'driver'});
@@ -303,23 +330,24 @@ async function checkTime(){
 	var hours = time.getHours(), minutes = time.getMinutes();
 	if(hours==11 && minutes==0 && check){
 		try{
-			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'driver_amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id']}]});
+			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'driver_amount', 'amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id', 'balance']}]});
 			var query = await axios.post('https://asterisk.svo.kz/admin/send_drivers', select);
 			if(query.status==200){
 				for(var i=0; i<select.length; i++){
 					var update = await q.update({table: 'day_amount', where: {active: true}, data: {active: false}});
 				}
-				var drivers = await q.select({table: 'driver', keys: ['id']});
+				var drivers = await q.select({table: 'driver'});
 				for(var i=0; i<drivers.length; i++){
-					var insert = q.insert({table: 'day_amount', data: {driver_id: drivers[i].id}});
+					if(!drivers[i].balance<0){
+						var insert = await q.insert({table: 'day_amount', data: {driver_id: drivers[i].id}});
+					}
 				}
 			} else {
-				res.status(query.status).send();
+				console.log(query)
 			}
 			check = false
 		} catch(e){
 			console.log(e);
-			res.status(500).send();
 		}
 	} else if(hours==11 && minutes==1){
 		check = true;
