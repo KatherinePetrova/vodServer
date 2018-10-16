@@ -97,15 +97,15 @@ router.post('/driver/accept', async function(req, res){
 			var insert_da = await q.insert({table: 'day_amount', data: {driver_id: driver.id}});
 			res.send()
 		} else {
-			res.status(500).send();
+			res.status(query.status).send();
 		}
 	} else if(driver.acceptance==0){
 		var query = await axios.post('https://asterisk.svo.kz/admin/driver/acceptance', driver);
 		if(query.status==200){
 			var del = await q.delete({table: 'driver', where: {id: driver.id}});
-			res.status(409).send();
+			res.status(200).send();
 		} else {
-			res.status(500).send();
+			res.status(query.status).send();
 		}
 	}
 });
