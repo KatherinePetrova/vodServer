@@ -48,7 +48,10 @@ router.post('/new/driver', async function(req, res, next){
 		name: req.body.name,
 		telegram_id: req.body.id,
 		phone: req.body.phone,
-		document: req.body.document
+		udo_side1: req.body.udo_side1,
+		udo_side2: req.body.udo_side2,
+		prava_side1: req.body.prava_side1,
+		prava_side2: req.body.prava_side2
 	};
 
 	try{
