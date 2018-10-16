@@ -108,6 +108,17 @@ router.post('/driver/accept', async function(req, res){
 			res.status(query.status).send();
 		}
 	}
+	//Получение данных с базы
+	var select = await q.select({table: 'driver'});
+	//Отправление сведений о новом водителе операторам (с помощью WebSocket)
+	for(var i; i<wsCons.length; i++){
+		//Проверка на существование соединения с клиентом
+		try{
+			wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
+		} catch(e){
+			console.log('catch');
+		}
+	}
 });
 
 //Новая заявка
