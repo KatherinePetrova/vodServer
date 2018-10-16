@@ -89,6 +89,7 @@ router.post('/new/driver', async function(req, res, next){
 
 //Подтверждение регистрации водителя
 router.post('/driver/accept', async function(req, res){
+	console.log(req.body);
 	var driver = req.body.driver;
 	if(driver.acceptance==1){
 		var query = await axios.post('https://asterisk.svo.kz/admin/driver/acceptance', driver);
