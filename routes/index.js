@@ -67,7 +67,7 @@ router.post('/new/driver', async function(req, res, next){
 			var select = await q.select({table: 'driver'});
 
 			//Отправление сведений о новом водителе операторам (с помощью WebSocket)
-			for(var i; i<wsCons.length; i++){
+			for(var i=0; i<wsCons.length; i++){
 				//Проверка на существование соединения с клиентом
 				try{
 					await wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
@@ -75,7 +75,6 @@ router.post('/new/driver', async function(req, res, next){
 					console.log('catch');
 				}
 			}
-
 			//Отправка успеха клиенту
 			res.send();
 		}
@@ -89,7 +88,6 @@ router.post('/new/driver', async function(req, res, next){
 
 //Подтверждение регистрации водителя
 router.post('/driver/accept', async function(req, res){
-	console.log(req.body);
 	var driver = req.body.driver;
 	if(driver.acceptance==1){
 		var query = await axios.post('https://asterisk.svo.kz/admin/driver/acceptance', driver);
@@ -97,7 +95,7 @@ router.post('/driver/accept', async function(req, res){
 			var update = await q.update({table: 'driver', data: driver, where: {id: driver.id}});
 			var insert_da = await q.insert({table: 'day_amount', data: {driver_id: driver.id}});
 			var select = await q.select({table: 'driver'});
-			for(var i; i<wsCons.length; i++){
+			for(var i=0; i<wsCons.length; i++){
 				try{
 					await wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
 				} catch(e){
@@ -113,7 +111,7 @@ router.post('/driver/accept', async function(req, res){
 		if(query.status==200){
 			var del = await q.delete({table: 'driver', where: {id: driver.id}});
 			var select = await q.select({table: 'driver'});
-			for(var i; i<wsCons.length; i++){
+			for(var i=0; i<wsCons.length; i++){
 				try{
 					await wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
 				} catch(e){
