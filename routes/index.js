@@ -70,7 +70,7 @@ router.post('/new/driver', async function(req, res, next){
 			for(var i; i<wsCons.length; i++){
 				//Проверка на существование соединения с клиентом
 				try{
-					wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
+					await wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
 				} catch(e){
 					console.log('catch');
 				}
@@ -96,6 +96,14 @@ router.post('/driver/accept', async function(req, res){
 		if(query.status==200){
 			var update = await q.update({table: 'driver', data: driver, where: {id: driver.id}});
 			var insert_da = await q.insert({table: 'day_amount', data: {driver_id: driver.id}});
+			var select = await q.select({table: 'driver'});
+			for(var i; i<wsCons.length; i++){
+				try{
+					await wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
+				} catch(e){
+					console.log('catch');
+				}
+			}
 			res.send()
 		} else {
 			res.status(query.status).send();
@@ -104,20 +112,17 @@ router.post('/driver/accept', async function(req, res){
 		var query = await axios.post('https://asterisk.svo.kz/admin/driver/acceptance', driver);
 		if(query.status==200){
 			var del = await q.delete({table: 'driver', where: {id: driver.id}});
+			var select = await q.select({table: 'driver'});
+			for(var i; i<wsCons.length; i++){
+				try{
+					await wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
+				} catch(e){
+					console.log('catch');
+				}
+			}
 			res.status(200).send();
 		} else {
 			res.status(query.status).send();
-		}
-	}
-	//Получение данных с базы
-	var select = await q.select({table: 'driver'});
-	//Отправление сведений о новом водителе операторам (с помощью WebSocket)
-	for(var i; i<wsCons.length; i++){
-		//Проверка на существование соединения с клиентом
-		try{
-			wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
-		} catch(e){
-			console.log('catch');
 		}
 	}
 });
@@ -145,7 +150,13 @@ router.post('/new/app', async function(req, res, next){
 		var select_app = await q.select({table: 'app', where: {id: insert.insertId}});
 		select_app = select_app[0];
 		var select_driver = await q.select({table: 'driver', where: {status: true, acceptance: true}});
-		var query = await axios.post('https://asterisk.svo.kz/admin/app', {app: select_app, drivers: select_driver});
+		var select_driver_balanced = [];
+		for(var i=0; i<select_driver.length; i++){
+			if(select_driver[i].balance>=0){
+				select_driver_balanced.push(select_driver[i]);
+			}
+		}
+		var query = await axios.post('https://asterisk.svo.kz/admin/app', {app: select_app, drivers: select_driver_balanced});
 		if(query.status==200){
 			res.send();			
 		} else {
@@ -338,7 +349,7 @@ var check = true;
 async function checkTime(){
 	var time = new Date();
 	var hours = time.getHours(), minutes = time.getMinutes();
-	if(hours==15 && minutes==0 && check){
+	if(hours==9 && minutes==0 && check){
 		try{
 			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'driver_amount', 'amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id', 'balance']}]});
 			var query = await axios.post('https://asterisk.svo.kz/admin/send_drivers', select);
@@ -359,7 +370,7 @@ async function checkTime(){
 		} catch(e){
 			console.log(e);
 		}
-	} else if(hours==15 && minutes==1){
+	} else if(hours==9 && minutes==1){
 		check = true;
 	}
 }
