@@ -347,7 +347,7 @@ var check = true;
 async function checkTime(){
 	var time = new Date();
 	var hours = time.getHours(), minutes = time.getMinutes();
-	if(hours==11 && minutes==0 && check){
+	if(hours==9 && minutes==0 && check){
 		try{
 			var select = await q.select({table: 'day_amount', where: {active: true}, keys: ['id', 'driver_amount', 'amount'], join: [{on: {driver_id: 'id'}, table: 'driver', keys: ['telegram_id', 'balance']}]});
 			var query = await axios.post('https://asterisk.svo.kz/admin/send_drivers', select);
@@ -366,7 +366,7 @@ async function checkTime(){
 		} catch(e){
 			console.log(e);
 		}
-	} else if(hours==11 && minutes==1){
+	} else if(hours==9 && minutes==1){
 		check = true;
 	}
 }
