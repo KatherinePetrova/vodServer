@@ -130,6 +130,8 @@ router.post('/new/app', async function(req, res, next){
 
 	//Данные с формы, статус по умолчанию - новая заявка
 	var app = {
+		name: req.body.name,
+		phone: req.body.phone,
 		adress: req.body.adress,
 		area: req.body.area,
 		status: 1
@@ -140,7 +142,7 @@ router.post('/new/app', async function(req, res, next){
 		var select = await q.select({table: 'app'});
 		for(var i=0; i<wsCons.length; i++){
 			try{
-				wsCons[i].send(JSON.stringify({action: 'app', data: select}));
+				wsCons[i].send(JSON.stringify({action: 'new_app', data: select}));
 			} catch(e){
 				console.log('catch')
 			}
