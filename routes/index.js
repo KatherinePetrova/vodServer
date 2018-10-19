@@ -357,9 +357,7 @@ async function checkTime(){
 				}
 				var drivers = await q.select({table: 'driver'});
 				for(var i=0; i<drivers.length; i++){
-					if(!drivers[i].balance<0){
-						var insert = await q.insert({table: 'day_amount', data: {driver_id: drivers[i].id}});
-					}
+					var insert = await q.insert({table: 'day_amount', data: {driver_id: drivers[i].id}});
 				}
 			} else {
 				console.log(query)
