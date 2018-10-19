@@ -139,7 +139,8 @@ router.post('/new/app', async function(req, res, next){
 
 	try {
 		var insert = await q.insert({table: 'app', data: app});
-		var select = await q.select({table: 'app', where: {id: insert.insertId}})[0];
+		var select = await q.select({table: 'app', where: {id: insert.insertId}});
+		select = select[0];
 		for(var i=0; i<wsCons.length; i++){
 			try{
 				wsCons[i].send(JSON.stringify({action: 'new_app', data: select}));
