@@ -75,7 +75,7 @@ async function firstConfiguration(con){
 		await con.query('CREATE TABLE app_status(id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255))');
 		console.log('app_status created');
 
-		await con.query('CREATE TABLE app (id INT AUTO_INCREMENT PRIMARY KEY, adress VARCHAR(255), driver INT REFERENCES driver(id), area INT REFERENCES area(id), status INT REFERENCES app_status(id), app_cometime DATETIME DEFAULT CURRENT_TIMESTAMP, app_start DATETIME, app_finish DATETIME, app_time TIME, amount INT, driver_amount INT)');
+		await con.query('CREATE TABLE app (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255), phone VARCHAR(255), adress VARCHAR(255), driver INT REFERENCES driver(id), area INT REFERENCES area(id), status INT REFERENCES app_status(id), app_cometime DATETIME DEFAULT CURRENT_TIMESTAMP, app_start DATETIME, app_finish DATETIME, app_time TIME, amount INT, driver_amount INT)');
 		console.log('app table created');
 
 		await con.query('CREATE TABLE day_amount (id INT AUTO_INCREMENT PRIMARY KEY, date DATETIME DEFAULT CURRENT_TIMESTAMP, driver_id INT REFERENCES driver(id), amount INT DEFAULT 0, driver_amount INT DEFAULT 0, active BOOLEAN DEFAULT TRUE)');
