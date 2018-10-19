@@ -175,7 +175,6 @@ router.post('/accept', async function(req, res){
 	try{
 		var select_app = await q.select({table: 'app', where: {id: app_id}});
 		select_app = select_app[0];
-		console.log(select_app.driver);
 		if(select_app.driver == null){
 			var select_driver = await q.select({table: 'driver', where: {telegram_id: telegram_id}});
 			select_driver = select_driver[0];
@@ -259,7 +258,7 @@ router.post('/update/status/on', async function(req, res){
 	var status = req.body.status;
 	var app = {
 		app_start: date,
-		status: req.body
+		status: status
 	};
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: id}});
@@ -302,7 +301,7 @@ router.post('/update/status/finish', async function(req, res){
 		var cost = time*700 + val;
 		var driver_amount = 400 + ((cost/100)*5);
 		update_app = await q.update({table: 'app', data: {app_time: time, amount: cost-driver_amount, driver_amount: driver_amount}, where: {id: id}});
-		var update_driver = await q.update({table: 'driver', data: {status: true, balance: select_driver.balance- (cost-driver_amount)}, where: {id: select_app.driver}});
+		var update_driver = await q.update({table: 'driver', data: {status: true, balance: select_driver.balance-(cost-driver_amount)}, where: {id: select_app.driver}});
 		var select_app_ws = await q.select({table: 'app'});
 		var select_driver_ws = await q.select({table: 'driver'});
 		for(var i=0; i<wsCons.length; i++){
@@ -321,6 +320,7 @@ router.post('/update/status/finish', async function(req, res){
 		}
 		var select_da = await q.select({table: 'day_amount', where: {active: true, driver_id: select_app.driver}});
 		select_da = select_da[0];
+		console.log(select_da);
 		var update_da = await q.update({table: 'day_amount', where: {id: select_da.id}, data: {amount: select_da.amount + cost, driver_amount: driver_amount}});		
 		res.send({time: time, driver_amount: driver_amount});
 	} catch(e){
