@@ -64,13 +64,14 @@ router.post('/new/driver', async function(req, res, next){
 			var insert = await q.insert({table: 'driver', data: driver});
 
 			//Получение данных с базы
-			var select = await q.select({table: 'driver'});
+			var select = await q.select({table: 'driver', where: {id: insert.insertId}});
+			select = select[0];
 
 			//Отправление сведений о новом водителе операторам (с помощью WebSocket)
 			for(var i=0; i<wsCons.length; i++){
 				//Проверка на существование соединения с клиентом
 				try{
-					await wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
+					await wsCons[i].send(JSON.stringify({action: 'new_driver', data: select}));
 				} catch(e){
 					console.log('catch');
 				}
@@ -139,10 +140,8 @@ router.post('/new/app', async function(req, res, next){
 
 	try {
 		var insert = await q.insert({table: 'app', data: app});
-		console.log(insert)
 		var select = await q.select({table: 'app', where: {id: insert.insertId}});
 		select = select[0];
-		console.log(select)
 		for(var i=0; i<wsCons.length; i++){
 			try{
 				wsCons[i].send(JSON.stringify({action: 'new_app', data: select}));
@@ -150,27 +149,50 @@ router.post('/new/app', async function(req, res, next){
 				console.log('catch')
 			}
 		}
-		var select_app = await q.select({table: 'app', where: {id: insert.insertId}});
+		res.send();
+		
+	} catch(e) {
+		console.log(e);
+		res.status(500).send();
+	}
+
+});
+
+//Отправка заявки
+router.post('/send/app', async function(req, res){
+	var app = req.body.app;
+	app.status = 2;
+	try{
+		var update = await q.update({table: 'app', data: app, where: {id: app.id}});
+		var select_app = await q.select({table: 'app', where: {id: app.id}});
 		select_app = select_app[0];
-		var select_driver = await q.select({table: 'driver', where: {status: true, acceptance: true}});
+		var select_driver = await q.select({table: 'app', where: {status: true, acceptance: true}});
 		var select_driver_balanced = [];
 		for(var i=0; i<select_driver.length; i++){
 			if(select_driver[i].balance>=0){
 				select_driver_balanced.push(select_driver[i]);
 			}
 		}
+		var select_driver_ws = await q.select({table: 'driver'});
+		var select_app_ws = await q.select({table: 'app'});
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				await wsCons[i].send(JSON.stringify({action: 'driver', data: select_driver_ws}));
+				await wsCons[i].send(JSON.stringify({action: 'app', data: select_app_ws})); 
+			} catch(e){
+				console.log('catch');
+			}
+		}
 		var query = await axios.post('https://asterisk.svo.kz/admin/app', {app: select_app, drivers: select_driver_balanced});
 		if(query.status==200){
-			res.send();			
+			res.send();
 		} else {
-			console.log(e);
 			res.status(query.status).send();
 		}
-	} catch(e) {
+	} catch(e){
 		console.log(e);
 		res.status(500).send();
 	}
-
 });
 
 //Подтверждение заявки
@@ -186,7 +208,7 @@ router.post('/accept', async function(req, res){
 			var app = {
 				driver: select_driver.id,
 				app_start: new Date(),
-				status: 2
+				status: 3
 			}
 			var update_driver = await q.update({table: 'driver', where: {id: select_driver.id}, data: {status: false}});
 			var update_app = await q.update({table: 'app', where: {id: app_id}, data: app});
@@ -216,7 +238,7 @@ router.post('/cancel', async function(req, res){
 		driver: null,
 		app_cometime: null,
 		app_start: null,
-		status: 1
+		status: 2
 	};
 	var driver = {
 		telegram_id: req.body.telegram_id,
@@ -225,8 +247,7 @@ router.post('/cancel', async function(req, res){
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: app.id}});
 		var update_driver = await q.update({table: 'driver', data: driver, where: {telegram_id: driver.telegram_id}});
-		var select = await q.select({table: 'app', where: {id: app.id}});
-		select = select[0];
+		var select = await q.select({table: 'app'});
 		var select_driver = await q.select({table: 'driver', where: {status: true, acceptance: true}});
 		var select_driver_balanced = [];
 		for(var i=0; i<select_driver.length; i++){
@@ -243,7 +264,7 @@ router.post('/cancel', async function(req, res){
 		}
 		for(var i=0; i<wsCons.length; i++){
 			try{
-				wsCons[i].send(JSON.stringify({action: 'new_app', data: select}));
+				wsCons[i].send(JSON.stringify({action: 'app', data: select}));
 				wsCons[i].send(JSON.stringify({action: 'driver', data: select_driver_ws}));
 			} catch(e){
 				console.log('catch')

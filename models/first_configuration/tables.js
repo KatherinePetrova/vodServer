@@ -13,9 +13,9 @@ con.query = util.promisify(con.query);
 async function addFirstData(con){
 	try{
 		con.changeUser({database: "vod"});
-		await con.query('INSERT INTO app_status (name) VALUES ("Ожидает ответа водителя")');
+		await con.query('INSERT INTO app_status (name) VALUES ("Новая заявка")');
+		await con.query('INSERT INTO app_status (name) VALUES ("Отправлена")');
 		await con.query('INSERT INTO app_status (name) VALUES ("Водитель принял заявку")');
-		await con.query('INSERT INTO app_status (name) VALUES ("Водитель выехал")');
 		await con.query('INSERT INTO app_status (name) VALUES ("Водитель на исполнении")');
 		await con.query('INSERT INTO app_status (name) VALUES ("Заявка выполнена")');
 		await con.query('INSERT INTO app_status (name) VALUES ("Заявка отменена")');
