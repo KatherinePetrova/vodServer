@@ -216,7 +216,7 @@ router.post('/cancel', async function(req, res){
 		driver: null,
 		app_cometime: null,
 		app_start: null,
-		app_status: 1
+		status: 1
 	};
 	var driver = {
 		telegram_id: req.body.telegram_id,
