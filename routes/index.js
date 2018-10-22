@@ -226,14 +226,29 @@ router.post('/cancel', async function(req, res){
 		var update_app = await q.update({table: 'app', data: app, where: {id: app.id}});
 		var update_driver = await q.update({table: 'driver', data: driver, where: {telegram_id: driver.telegram_id}});
 		var select = await q.select({table: 'app', where: {id: app.id}});
+		select = select[0];
+		var select_driver = await q.select({table: 'driver', where: {status: true, acceptance: true}});
+		var select_driver_balanced = [];
+		for(var i=0; i<select_driver.length; i++){
+			if(select_driver[i].balance>=0){
+				select_driver_balanced.push(select_driver[i]);
+			}
+		}
+		var select_driver_ws = await q.select({table: 'driver'});
+		var query = await axios.post('https://asterisk.svo.kz/admin/app', {app: select, drivers: select_driver_balanced});
+		if(query.status==200){
+			res.send();
+		} else {
+			res.status(query.status).send();
+		}
 		for(var i=0; i<wsCons.length; i++){
 			try{
 				wsCons[i].send(JSON.stringify({action: 'new_app', data: select}));
+				wsCons[i].send(JSON.stringify({action: 'driver', data: select_driver_ws}));
 			} catch(e){
 				console.log('catch')
 			}
 		}
-		res.send();
 	} catch(e){
 		console.log(e);
 		res.status(500).send();
@@ -252,7 +267,7 @@ router.post('/update/driver/data', async function(req, res, next){
 
 	try{
 		var update = await q.update({table: 'driver', data: driver, where: {id: id}});
-		var select = await q.select({table: 'driver'})
+		var select = await q.select({table: 'driver'});
 		for(var i=0; i<wsCons.length; i++){
 			try{
 				wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
