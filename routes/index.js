@@ -209,6 +209,37 @@ router.post('/accept', async function(req, res){
 	}
 });
 
+//Отмена заявки водителем
+router.post('/cancel', async function(req, res){
+	var app = {
+		id: req.body.id,
+		driver: null,
+		app_cometime: null,
+		app_start: null,
+		app_status: 1
+	};
+	var driver = {
+		telegram_id: req.body.telegram_id,
+		status: true
+	};
+	try{
+		var update_app = await q.update({table: 'app', data: app, where: {id: app.id}});
+		var update_driver = await q.update({table: 'driver', data: driver, where: {telegram_id: driver.telegram_id}});
+		var select = await q.select({table: 'app', where: {id: app.id}});
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				wsCons[i].send(JSON.stringify({action: 'new_app', data: select}));
+			} catch(e){
+				console.log('catch')
+			}
+		}
+		res.send();
+	} catch(e){
+		res.status(500).send();
+	}
+	
+});
+
 //Изменение данных водителя
 router.post('/update/driver/data', async function(req, res, next){
 	var id = req.body.id;
