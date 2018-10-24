@@ -41,6 +41,23 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Server status: on' });
 });
 
+//Проверка существования водителя
+router.post('/check/driver', async function(req, res){
+	var telegram_id = req.body.telegram_id;
+	try{
+		var check = await q.select({table: "driver", where: {telegram_id: telegram_id}});
+		if(check.length==0){
+			res.send()
+		} else {
+			res.status(409).send();
+		}
+	} catch(e){
+		console.log(e);
+		res.status(500).send();
+	}
+	
+});
+
 //Добавление нового водителя
 router.post('/new/driver', async function(req, res, next){
 	//Данные с формы
