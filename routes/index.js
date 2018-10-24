@@ -166,7 +166,7 @@ router.post('/send/app', async function(req, res){
 		var update = await q.update({table: 'app', data: {status: app.status}, where: {id: app.id}});
 		var select_app = await q.select({table: 'app', where: {id: app.id}});
 		select_app = select_app[0];
-		var select_driver = await q.select({table: 'app', where: {status: true, acceptance: true}});
+		var select_driver = await q.select({table: 'app', where: {status: 1, acceptance: 1}});
 		var select_driver_balanced = [];
 		for(var i=0; i<select_driver.length; i++){
 			if(select_driver[i].balance>=0){
