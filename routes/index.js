@@ -163,7 +163,7 @@ router.post('/send/app', async function(req, res){
 	var app = req.body.app;
 	app.status = 2;
 	try{
-		var update = await q.update({table: 'app', data: app, where: {id: app.id}});
+		var update = await q.update({table: 'app', data: {status: app.status}, where: {id: app.id}});
 		var select_app = await q.select({table: 'app', where: {id: app.id}});
 		select_app = select_app[0];
 		var select_driver = await q.select({table: 'app', where: {status: true, acceptance: true}});
