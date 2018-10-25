@@ -288,6 +288,7 @@ router.post('/cancel', async function(req, res){
 		var update_driver = await q.update({table: 'driver', data: driver, where: {telegram_id: driver.telegram_id}});
 		var select_ws = await q.select({table: 'app'});
 		var select = await q.select({table: 'app', where: {id: app.id}});
+		select = select[0];
 		var select_driver = await q.select({table: 'driver', where: {status: true, acceptance: true}});
 		var select_driver_balanced = [];
 		for(var i=0; i<select_driver.length; i++){
