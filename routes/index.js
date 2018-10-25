@@ -51,7 +51,7 @@ router.post('/cancel/app', async function(req, res){
 		var select_app = await q.select({table: 'app', where: {id: app.id}});
 		select_app = select_app[0];
 		console.log(select_app);
-		if(select_app.driver!=null){
+		if(typeof select_app.driver!='undefined'){
 			console.log('client cancel updated driver');
 			var update_driver = await q.update({table: 'driver', where: {id: app.driver}, data: {status: true}});
 			var select_driver = await q.select({table: 'driver', where: {id: app.driver}});
