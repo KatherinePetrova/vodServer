@@ -263,10 +263,10 @@ router.post('/accept', async function(req, res){
 			}
 			res.send();
 		} else {
-			console.log(e);
 			res.status(409).send();
 		}
 	} catch(e){
+		console.log(e);
 		res.status(500).send();
 	}
 });
