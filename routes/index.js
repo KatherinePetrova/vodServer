@@ -286,7 +286,8 @@ router.post('/cancel', async function(req, res){
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: app.id}});
 		var update_driver = await q.update({table: 'driver', data: driver, where: {telegram_id: driver.telegram_id}});
-		var select = await q.select({table: 'app'});
+		var select_ws = await q.select({table: 'app'});
+		var select = await q.select({table: 'app', where: {id: app.id}});
 		var select_driver = await q.select({table: 'driver', where: {status: true, acceptance: true}});
 		var select_driver_balanced = [];
 		for(var i=0; i<select_driver.length; i++){
@@ -303,7 +304,7 @@ router.post('/cancel', async function(req, res){
 		}
 		for(var i=0; i<wsCons.length; i++){
 			try{
-				wsCons[i].send(JSON.stringify({action: 'app', data: select}));
+				wsCons[i].send(JSON.stringify({action: 'app', data: select_ws}));
 				wsCons[i].send(JSON.stringify({action: 'driver', data: select_driver_ws}));
 			} catch(e){
 				console.log('catch')
