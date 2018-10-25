@@ -41,6 +41,28 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Server status: on' });
 });
 
+//Изменение баланса
+router.post('/update/driver/balance', async function(req, res){
+	var driver = {
+		id: req.body.id,
+		balance: req.body.balance
+	};
+	try{
+		var update = await q.update({table: 'driver', where: {id: driver.id}, data: driver});
+		var select = await q.select({table: 'driver'});
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				await wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
+			} catch(e){
+				console.log('catch');
+			}
+		}
+		res.send();
+	} catch(e){
+		res.status(500).send();
+	}
+});
+
 //Проверка существования водителя
 router.post('/check/driver', async function(req, res){
 	var telegram_id = req.body.telegram_id;
