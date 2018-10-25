@@ -53,7 +53,7 @@ router.post('/cancel/app', async function(req, res){
 			var update_driver = await q.update({table: 'driver', where: {id: app.driver}, data: {status: true}});
 			var select_driver = await q.select({table: 'driver', where: {id: app.driver}});
 			select_driver = select_driver[0];
-			var query = await axios.post('/admin/client_dec', {id: app.id, telegram_id: select_driver.telegram_id});
+			var query = await axios.post('https://asterisk.svo.kz/admin/client_dec', {id: app.id, telegram_id: select_driver.telegram_id});
 			if(query.status!=200){
 				throw new Error(query);
 			}
