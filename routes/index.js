@@ -29,8 +29,20 @@ wss.on('connection', function connection(ws) {
 
 var axios = require('axios');
 
+//Хэдеры для доступа с других портов
+router.use(function(req, res, next) {
+ 	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+ 	next();
+});
+
+//Домашняя страница сервера
+router.get('/', function(req, res, next) {
+  res.render('index', { title: 'Server status: on' });
+});
+
 //Проверка существования водителя
-exports.checkDriver = async(req, res, next) => {
+router.post('/check/driver', async function(req, res){
 	var telegram_id = req.body.telegram_id;
 	try{
 		var check = await q.select({table: "driver", where: {telegram_id: telegram_id}});
@@ -44,10 +56,20 @@ exports.checkDriver = async(req, res, next) => {
 		res.status(500).send();
 	}
 	
-};
+});
 
 //Добавление нового водителя
-exports.newDriver = async(req, res, next) => {
+router.post('/new/driver', async function(req, res, next){
+	//Данные с формы
+	var driver = {
+		name: req.body.name,
+		telegram_id: req.body.id,
+		phone: req.body.phone,
+		udo_side1: req.body.udo_side1,
+		udo_side2: req.body.udo_side2,
+		prava_side1: req.body.prava_side1,
+		prava_side2: req.body.prava_side2
+	};
 
 	try{
 		//Проверка на существование
@@ -80,10 +102,10 @@ exports.newDriver = async(req, res, next) => {
 		//Отправка ошибки клиенту
 		res.send(500).send();
 	}
-};
+});
 
 //Подтверждение регистрации водителя
-exports.acceptDriver = async(req, res, next) => {
+router.post('/driver/accept', async function(req, res){
 	var driver = req.body.driver;
 	if(driver.acceptance==1){
 		var query = await axios.post('https://asterisk.svo.kz/admin/driver/acceptance', driver);
@@ -119,10 +141,20 @@ exports.acceptDriver = async(req, res, next) => {
 			res.status(query.status).send();
 		}
 	}
-};
+});
 
 //Новая заявка
-exports.newApp = async(req, res, next) => {
+router.post('/new/app', async function(req, res, next){
+
+	//Данные с формы, статус по умолчанию - новая заявка
+	var app = {
+		name: req.body.name,
+		phone: req.body.phone,
+		adress: req.body.adress,
+		area: req.body.area,
+		status: 1
+	};
+
 	try {
 		var insert = await q.insert({table: 'app', data: app});
 		var select = await q.select({table: 'app', where: {id: insert.insertId}});
@@ -141,10 +173,10 @@ exports.newApp = async(req, res, next) => {
 		res.status(500).send();
 	}
 
-};
+});
 
 //Отправка заявки
-exports.sendApp = async(req, res, next) => {
+router.post('/send/app', async function(req, res){
 	var app = req.body.app;
 	app.status = 2;
 	try{
@@ -178,10 +210,10 @@ exports.sendApp = async(req, res, next) => {
 		console.log(e);
 		res.status(500).send();
 	}
-};
+});
 
 //Подтверждение заявки
-exports.Accept = async(req, res, next) => {
+router.post('/accept', async function(req, res){
 	var telegram_id = req.body.telegram_id;
 	var app_id = req.body.id;
 	try{
@@ -214,10 +246,17 @@ exports.Accept = async(req, res, next) => {
 	} catch(e){
 		res.status(500).send();
 	}
-};
+});
 
 //Отмена заявки водителем
-exports.cancel = async(req, res, next) => {
+router.post('/cancel', async function(req, res){
+	var app = {
+		id: req.body.id,
+		driver: null,
+		app_cometime: null,
+		app_start: null,
+		status: 2
+	};
 	var driver = {
 		telegram_id: req.body.telegram_id,
 		status: true
@@ -253,10 +292,10 @@ exports.cancel = async(req, res, next) => {
 		res.status(500).send();
 	}
 	
-};
+});
 
 //Изменение данных водителя
-exports.updateDriverData = async(req, res, next) => {
+router.post('/update/driver/data', async function(req, res, next){
 	var id = req.body.id;
 	var driver = {
 		name: req.body.id,
@@ -279,10 +318,10 @@ exports.updateDriverData = async(req, res, next) => {
 		throw new Error(e);
 		res.status(500).send();
 	}
-};
+});
 
 //Удаление водителя
-expprts.deleteDriver = async(req, res, next) => {
+router.post('/delete/driver', async function(req, res, next){
 	var id = req.body.id;
 	try{
 		var del = await q.delete({table: 'driver', where: {telegram_id: id}});
@@ -299,10 +338,10 @@ expprts.deleteDriver = async(req, res, next) => {
 		throw new Error(e);
 		res.status(500).send();
 	}
-};
+});
 
 //Статус: (3, 4) Водитель выехал, водитель на исполнении
-exports.updateStatusOn = async(req, res, next) => {
+router.post('/update/status/on', async function(req, res){
 	console.log(req.body);
 	var date = new Date();
 	var id = req.body.id;
@@ -325,10 +364,10 @@ exports.updateStatusOn = async(req, res, next) => {
 	} catch(e){
 		res.status(500).send();
 	}
-};
+});
 
 //Статус: (5) завершение заявки
-exports.updateStatusFinish = async(req, res, next) => {
+router.post('/update/status/finish', async function(req, res){
 	var date = new Date();
 	var id = req.body.id;
 	var app = {
@@ -378,10 +417,10 @@ exports.updateStatusFinish = async(req, res, next) => {
 		console.log(e);
 		res.status(500).send();
 	}
-};
+});
 
 //Получение информации для оператора
-exports.getInfo = async(req, res, next) => {
+router.post('/get/inf', async function(req, res, next){
 	try{
 		var token = await jwt.verify(req.body.token, secret);
 		var app = await q.select({table: 'app'});
@@ -391,7 +430,7 @@ exports.getInfo = async(req, res, next) => {
 	} catch(e){
 		res.status(500).send();
 	}
-};
+});
 
 var check = true;
 
