@@ -42,7 +42,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/cancel/app', async function(req, res){
-	var app = req.body.app;
+	var app = req.body;
 	app.status = 6;
 	try {
 		var update_app = await q.update({table: 'app', where: {id: app.id}, data: app});
