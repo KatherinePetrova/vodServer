@@ -48,7 +48,7 @@ router.post('/cancel/app', async function(req, res){
 	};
 	try {
 		var update_app = await q.update({table: 'app', where: {id: app.id}, data: app});
-		var select_app = await q.select({table; 'app', where: {id: app.id}});
+		var select_app = await q.select({table: 'app', where: {id: app.id}});
 		select_app = select_app[0];
 		console.log(select_app);
 		if(select_app.driver!=null){
