@@ -41,6 +41,38 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Server status: on' });
 });
 
+router.post('/cancel/app', async function(req, res){
+	var app = req.body.app;
+	app.status = 6;
+	try {
+		var update_app = await q.update({table: 'app', where: {id: app.id}, data: app});
+		if(app.driver!=null){
+			console.log('client cancel updated driver');
+			var update_driver = await q.update({table: 'driver', where: {id: app.driver}, data: {status: true}});
+			var select_driver = await q.select({table: 'driver', where: {id: app.driver}});
+			select_driver = select_driver[0];
+			var query = await axios.post('/admin/client_dec', {id: app.id, telegram_id: select_driver.telegram_id});
+			if(query.status!=200){
+				throw new Error(query);
+			}
+		}
+		var select = await q.select({table: 'app'});
+		var driver = await q.select({table: 'driver'});
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				await wsCons[i].send(JSON.stringify({action: 'driver', data: driver}));
+				await wsCons[i].send(JSON.stringify({action: 'app', data: select}));
+			} catch(e){
+				console.log('catch');
+			}
+		}
+		res.send();
+	} catch(e){
+		console.log(e);
+		res.status(500).send();
+	}
+});
+
 //Изменение баланса
 router.post('/update/driver/balance', async function(req, res){
 	var driver = {
