@@ -335,12 +335,8 @@ router.post('/cancel', async function(req, res){
 			}
 		}
 		var select_driver_ws = await q.select({table: 'driver'});
+		res.send();
 		var query = await axios.post('https://asterisk.svo.kz/admin/app', {app: select, drivers: select_driver_balanced});
-		if(query.status==200){
-			res.send();
-		} else {
-			res.status(query.status).send();
-		}
 		for(var i=0; i<wsCons.length; i++){
 			try{
 				wsCons[i].send(JSON.stringify({action: 'app', data: select_ws}));
