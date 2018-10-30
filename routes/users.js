@@ -4,7 +4,7 @@ var con = require('../models/connection');
 var Query = require('node-mysql-ejq');
 var bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
-var routers = require('/routers');
+var routers = require('./routers');
 
 var query = new Query(con);
 var secret = "secret";

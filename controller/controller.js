@@ -1,14 +1,9 @@
 var express = require('express');
 var router = express.Router();
-
-//Модуль для создания и работы с токенами
-var jwt = require('jsonwebtoken');
-var secret = 'secret';
-
-//Соединение с mysql
+var routers = require('../routes/routers');
+var controller = require('express');
 var con = require('../models/connection');
 
-//Модуль для работы с mysql запросами
 var query = require('node-mysql-ejq');
 var q = new query(con);
 
@@ -27,7 +22,64 @@ wss.on('connection', function connection(ws) {
 	wsCons.push(ws);
 });
 
-var axios = require('axios');
+exports.cancelApp = async(req, res, next) => {
+	var app = {
+		id: req.body.id,
+		status: 6
+	};
+	try {
+		var update_app = await q.update({table: 'app', where: {id: app.id}, data: app});
+		var select_app = await q.select({table: 'app', where: {id: app.id}});
+		select_app = select_app[0];
+		console.log(select_app);
+		if(typeof select_app.driver!='undefined'){
+			console.log('client cancel updated driver');
+			var update_driver = await q.update({table: 'driver', where: {id: select_app.driver}, data: {status: true}});
+			var select_driver = await q.select({table: 'driver', where: {id: select_app.driver}});
+			select_driver = select_driver[0];
+			var query = await axios.post('https://asterisk.svo.kz/admin/client_dec', {id: app.id, telegram_id: select_driver.telegram_id});
+			if(query.status!=200){
+				throw new Error(query);
+			}
+		}
+		var select = await q.select({table: 'app'});
+		var driver = await q.select({table: 'driver'});
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				await wsCons[i].send(JSON.stringify({action: 'driver', data: driver}));
+				await wsCons[i].send(JSON.stringify({action: 'app', data: select}));
+			} catch(e){
+				console.log('catch');
+			}
+		}
+		res.send();
+	} catch(e){
+		console.log(e);
+		res.status(500).send();
+	}
+};
+
+//Изменение баланса
+exports.updateDriverBalance = async(req, res, next) => {
+	var driver = {
+		id: req.body.id,
+		balance: req.body.balance
+	};
+	try{
+		var update = await q.update({table: 'driver', where: {id: driver.id}, data: driver});
+		var select = await q.select({table: 'driver'});
+		for(var i=0; i<wsCons.length; i++){
+			try{
+				await wsCons[i].send(JSON.stringify({action: 'driver', data: select}));
+			} catch(e){
+				console.log('catch');
+			}
+		}
+		res.send();
+	} catch(e){
+		res.status(500).send();
+	}
+};
 
 //Проверка существования водителя
 exports.checkDriver = async(req, res, next) => {
@@ -45,9 +97,19 @@ exports.checkDriver = async(req, res, next) => {
 	}
 	
 };
-
 //Добавление нового водителя
 exports.newDriver = async(req, res, next) => {
+	var driver = {
+		name: req.body.name,
+		telegram_id: req.body.telegram_id,
+		phone: req.body.phone,
+		udo_side1: req.body.udo_side1,
+		udo_side2: req.body.udo_side2,
+		prava_side1: req.body.prava_side1,
+		prava_side2: req.body.prava_side2
+	};
+
+console.log(driver)
 
 	try{
 		//Проверка на существование
@@ -123,6 +185,13 @@ exports.acceptDriver = async(req, res, next) => {
 
 //Новая заявка
 exports.newApp = async(req, res, next) => {
+	var app = {
+		id: req.body.id,
+		driver: null,
+		app_cometime: null,
+		app_start: null,
+		status: 2
+	};
 	try {
 		var insert = await q.insert({table: 'app', data: app});
 		var select = await q.select({table: 'app', where: {id: insert.insertId}});
@@ -282,7 +351,7 @@ exports.updateDriverData = async(req, res, next) => {
 };
 
 //Удаление водителя
-expprts.deleteDriver = async(req, res, next) => {
+exports.deleteDriver = async(req, res, next) => {
 	var id = req.body.id;
 	try{
 		var del = await q.delete({table: 'driver', where: {telegram_id: id}});
@@ -422,5 +491,3 @@ async function checkTime(){
 	}
 }
 var x = setInterval(checkTime, 20*1000);
-
-module.exports = router;

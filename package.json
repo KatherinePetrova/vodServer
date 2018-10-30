@@ -7,16 +7,18 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
-    "bcrypt": "^3.0.1",
+    "bcrypt": "^3.0.2",
     "body-parser": "^1.18.3",
-    "cookie-parser": "~1.4.3",
-    "debug": "~2.6.9",
-    "express": "~4.16.0",
+    "cookie-parser": "^1.4.3",
+    "debug": "^2.6.9",
+    "express": "^4.16.4",
     "jsonwebtoken": "^8.3.0",
-    "morgan": "~1.9.0",
+    "morgan": "^1.9.1",
     "mysql": "^2.16.0",
     "node-mysql-ejq": "^1.0.21",
+    "nodemon": "^1.18.4",
     "passport": "^0.4.0",
-    "ws": "^6.0.0"
+    "websocket": "^1.0.28",
+    "ws": "^6.1.0"
   }
 }

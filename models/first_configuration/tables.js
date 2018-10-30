@@ -4,8 +4,7 @@ let util = require('util');
 //connection with mysql
 var con = mysql.createConnection({
   host: "localhost",
-  user: "root",
-  password: "Mandriva2012"
+  user: "root"
 });
 
 con.query = util.promisify(con.query);
@@ -21,7 +20,7 @@ async function addFirstData(con){
 		await con.query('INSERT INTO app_status (name) VALUES ("Заявка отменена")');
 
 		console.log('app_statuses added');
-	} catch(e){
+	} catch(e){s
 		console.log(e)
 	}
 }
