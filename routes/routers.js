@@ -43,49 +43,19 @@ router.post('/check', function(req,res, next){
 });
 
 
-router.post('/cancel/app', function(req,res, next){
-	controller.cancelApp;
-});
-router.post('/update/driver/balance', function(req,res, next){
-	controller.updateDriverBalance;
-});
-router.post('/check/driver', function(req,res, next){
-	controller.checkDriver;
-});
+router.post('/cancel/app', controller.cancelApp);
+router.post('/update/driver/balance', controller.updateDriverBalance);
+router.post('/check/driver', controller.checkDriver);
 router.post('/new/driver', controller.newDriver);
-
-/*router.post('/new/driver', function(req,res, next){
-	controller.newDriver;
-});*/
-router.post('/accept/driver', function(req,res, next){
-	controller.acceprDriver;
-});
-router.post('/new/app', function(req,res, next){
-	controller.newApp;
-});
-router.post('/send/app', function(req,res, next){
-	controller.sendApp;
-});
-router.post('/accept', function(req,res, next){
-	controller.Accept;
-});
-router.post('/cancel', function(req,res, next){
-	controller.cancel;
-});
-router.post('/update/driver/data', function(req,res, next){
-	controller.updateDriverData;
-});
-router.post('/delete/driver', function(req,res, next){
-	controller.deleteDriver;
-});
-router.post('/update/status/on', function(req,res, next){
-	controller.updateStatusOn;
-});
-router.post('/update/status/finish', function(req,res, next){
-	controller.updateStatusFinish;
-});
-router.post('/get/inf', function(req,res, next){
-	controller.getInfo;
-});
+router.post('/accept/driver', controller.acceptDriver);
+router.post('/new/app', controller.newApp);
+router.post('/send/app', controller.sendApp);
+router.post('/accept', controller.Accept);
+router.post('/cancel', controller.cancel);
+router.post('/update/driver/data', controller.updateDriverData);
+router.post('/delete/driver', controller.deleteDriver);
+router.post('/update/status/on', controller.updateStatusOn);
+router.post('/update/status/finish', controller.updateStatusFinish);
+router.post('/get/inf', controller.getInfo);
 
 module.exports = router;
