@@ -19,7 +19,7 @@ exports.newUser = async(req, res, next) => {
 		//mysql insert query to create new user
 		var user = await query.insert({table: "user", data: {
 			login: req.body.login,
-			password: hash,
+			password: req.body.hash,
 			email: req.body.mail
 		}});
 
@@ -75,5 +75,3 @@ exports.check = async(req, res, next) => {
 	}
 
 };
-
-module.exports = router;

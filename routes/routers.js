@@ -2,19 +2,20 @@ const express = require('express');
 const router = require('express').Router();
 const users = require('./users');
 var controller = require('../controller/controller');
+var app = require('../app');
 
-//Модуль для создания и работы с токенами
-var jwt = require('jsonwebtoken');
-var secret = 'secret';
+// //Модуль для создания и работы с токенами
+// var jwt = require('jsonwebtoken');
+// var secret = 'secret';
 
-//Соединение с mysql
-var con = require('../models/connection');
+// //Соединение с mysql
+// var con = require('../models/connection');
 
-//Модуль для работы с mysql запросами
-var query = require('node-mysql-ejq');
-var q = new query(con);
+// //Модуль для работы с mysql запросами
+// var query = require('node-mysql-ejq');
+// var q = new query(con);
 
-var axios = require('axios');
+// var axios = require('axios');
 
 //access for headers
 router.use(function(req, res, next) {
@@ -29,18 +30,10 @@ router.get('/', function(req, res, next) {
 	res.send('respond with a resource');
 });
 
-router.post('/new', function(req,res, next){
-	users.newUser;
-});
-router.post('/login', function(req,res, next){
-	users.login;
-});
-router.post('/compare', function(req,res, next){
-	users.compare;
-});
-router.post('/check', function(req,res, next){
-	users.check;
-});
+router.post('/new', users.newUser);
+router.post('/login', users.login);
+router.post('/compare', users.compare);
+router.post('/check', users.check);
 
 
 router.post('/cancel/app', controller.cancelApp);
