@@ -18,7 +18,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyparser.urlencoded({ extended: false }));
 app.use(bodyparser.json());
 
-app.get('/', router);
-app.get('/users', users);
+app.use('/', router);
+app.use('/users', router);
 
 module.exports = app;

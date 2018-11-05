@@ -5,6 +5,7 @@ var Query = require('node-mysql-ejq');
 var bcrypt = require('bcrypt');
 var jwt = require('jsonwebtoken');
 var routers = require('./routers');
+var app = require('../app')
 
 var query = new Query(con);
 var secret = "secret";
@@ -12,19 +13,22 @@ var secret = "secret";
 //new user registration
 exports.newUser = async(req, res, next) => {
 	//bcrypt using for crypting password
+	console.log(req.body)
 	let salt = await bcrypt.genSalt(10);
-	let hash = await bcrypt.hash(req.body.pass, salt);
+	let hash = await bcrypt.hash(req.body.password, salt);
+	
 	
 	try{
-		//mysql insert query to create new user
+		//mysql insert query to create new user`
 		var user = await query.insert({table: "user", data: {
 			login: req.body.login,
-			password: req.body.hash,
-			email: req.body.mail
+			password: hash,
+			email: req.body.email
 		}});
 
-		res.send();
+		res.status(200).send('success');
 	} catch(e){
+		console.log(e.message);
 		res.status(400).send();
 	}
 };
@@ -32,6 +36,9 @@ exports.newUser = async(req, res, next) => {
 //authorization
 exports.login = async(req, res, next) =>{
 	try{
+		
+	} catch(e) {
+		throw new Error(e);
 		var user = await query.select({table: "user", where: {login: req.body.login}});
 		user = user[0];
 		let bol = await bcrypt.compare(req.body.pass, user.password);
@@ -41,9 +48,6 @@ exports.login = async(req, res, next) =>{
 		} else {
 			res.status(403).send();
 		}
-		
-	} catch(e) {
-		throw new Error(e);
 		res.status(500).send();
 	}
 };
