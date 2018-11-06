@@ -15,7 +15,7 @@ exports.newUser = async(req, res, next) => {
 	//bcrypt using for crypting password
 	console.log(req.body)
 	let salt = await bcrypt.genSalt(10);
-	let hash = await bcrypt.hash(req.body.password, salt);
+	let hash = await bcrypt.hash(req.body.pass, salt);
 	
 	
 	try{
@@ -36,18 +36,18 @@ exports.newUser = async(req, res, next) => {
 //authorization
 exports.login = async(req, res, next) =>{
 	try{
-		
-	} catch(e) {
-		throw new Error(e);
 		var user = await query.select({table: "user", where: {login: req.body.login}});
 		user = user[0];
-		let bol = await bcrypt.compare(req.body.pass, user.password);
+		let bol = await bcrypt.compare(req.body.password, user.password);
 		if(bol){
 			var token = jwt.sign({id: user.id, name: user.login}, secret, {expiresIn: "12h"});
 			res.send(token);
 		} else {
 			res.status(403).send();
 		}
+
+	} catch(e) {
+		throw new Error(e);
 		res.status(500).send();
 	}
 };
@@ -74,8 +74,11 @@ exports.check = async(req, res, next) => {
 			username = decoded.name;
 		});
 		res.send(username);
+		res.status(200).send('success');
 	} catch(e) {
+		console.log(e.message)
 		res.status(401).send();
+		
 	}
 
 };
