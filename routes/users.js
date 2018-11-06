@@ -75,9 +75,8 @@ exports.check = async(req, res, next) => {
 			username = decoded.name;
 		});
 		res.send(username);
-		res.status(200).send('success');
 	} catch(e) {
-		console.log(e.message)
+		console.log(e);
 		res.status(401).send();
 		
 	}
