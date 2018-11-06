@@ -38,7 +38,7 @@ exports.login = async(req, res, next) =>{
 	try{
 		var user = await query.select({table: "user", where: {login: req.body.login}});
 		user = user[0];
-		let bol = await bcrypt.compare(req.body.password, user.password);
+		let bol = await bcrypt.compare(req.body.pass, user.password);
 		if(bol){
 			var token = jwt.sign({id: user.id, name: user.login}, secret, {expiresIn: "12h"});
 			res.send(token);
