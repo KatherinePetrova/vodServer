@@ -3,9 +3,11 @@ var router = express.Router();
 var routers = require('../routes/routers');
 var controller = require('express');
 var con = require('../models/connection');
+var jwt = require('jsonwebtoken');
 
 var query = require('node-mysql-ejq');
 var q = new query(con);
+var secret = "secret";
 
 //Создание WebSocket сервера
 const WebSocket = require('ws');
@@ -458,6 +460,7 @@ exports.getInfo = async(req, res, next) => {
 		var app_status = await q.select({table: 'app_status'});
 		res.send({app: app, driver: driver, app_status: app_status});
 	} catch(e){
+		console.log(e);
 		res.status(500).send();
 	}
 };
