@@ -63,6 +63,7 @@ exports.compare = async(req, res, next) =>{
 		}
 	} catch(e) {
 		res.status(406).send();
+		console.log(e);
 	}
 };
 
