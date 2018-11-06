@@ -188,11 +188,11 @@ exports.acceptDriver = async(req, res, next) => {
 //Новая заявка
 exports.newApp = async(req, res, next) => {
 	var app = {
-		id: req.body.id,
-		driver: null,
-		app_cometime: null,
-		app_start: null,
-		status: 2
+		name: req.body.name,
+		phone: req.body.phone,
+		adress: req.body.adress,
+		area: req.body.area,
+		status: 1
 	};
 	try {
 		var insert = await q.insert({table: 'app', data: app});
