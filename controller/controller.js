@@ -297,6 +297,10 @@ exports.cancel = async(req, res, next) => {
 		app_start: null,
 		status: 2
 	};
+	var driver = {
+		telegram_id: req.body.telegram_id,
+		status: true
+	};
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: app.id}});
 		var update_driver = await q.update({table: 'driver', data: driver, where: {telegram_id: driver.telegram_id}});
