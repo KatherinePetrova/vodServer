@@ -40,7 +40,7 @@ router.post('/cancel/app', controller.cancelApp);
 router.post('/update/driver/balance', controller.updateDriverBalance);
 router.post('/check/driver', controller.checkDriver);
 router.post('/new/driver', controller.newDriver);
-router.post('/accept/driver', controller.acceptDriver);
+router.post('/driver/accept', controller.acceptDriver);
 router.post('/new/app', controller.newApp);
 router.post('/send/app', controller.sendApp);
 router.post('/accept', controller.Accept);
