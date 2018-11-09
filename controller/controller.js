@@ -104,7 +104,7 @@ exports.checkDriver = async(req, res, next) => {
 exports.newDriver = async(req, res, next) => {
 	var driver = {
 		name: req.body.name,
-		telegram_id: req.body.telegram_id,
+		telegram_id: req.body.id,
 		phone: req.body.phone,
 		udo_side1: req.body.udo_side1,
 		udo_side2: req.body.udo_side2,
