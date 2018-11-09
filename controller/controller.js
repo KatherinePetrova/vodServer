@@ -304,7 +304,7 @@ exports.cancel = async(req, res, next) => {
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: app.id}});
 		var update_driver = await q.update({table: 'driver', data: driver, where: {telegram_id: driver.telegram_id}});
-		var select = await q.select({table: 'app'});
+		var select = await q.select({table: 'app', where : {id: app.id}});
 		var select_driver = await q.select({table: 'driver', where: {status: true, acceptance: true}});
 		var select_driver_balanced = [];
 		for(var i=0; i<select_driver.length; i++){
