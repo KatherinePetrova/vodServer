@@ -290,9 +290,12 @@ exports.Accept = async(req, res, next) => {
 
 //Отмена заявки водителем
 exports.cancel = async(req, res, next) => {
-	var driver = {
-		telegram_id: req.body.telegram_id,
-		status: true
+	var app = {
+		id: req.body.id,
+		driver: null,
+		app_cometime: null,
+		app_start: null,
+		status: 2
 	};
 	try{
 		var update_app = await q.update({table: 'app', data: app, where: {id: app.id}});
